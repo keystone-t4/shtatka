@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Кабинет — Штатка</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<link rel="stylesheet" href="cabinet.css">
+</head>
+<body data-page="home">
+<template id="logoTpl"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg></template>
+<div class="app">
+ <aside class="side" id="side" aria-label="Меню"></aside>
+
+ <main>
+  <div class="top">
+   <button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button>
+   <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input id="search" type="search" placeholder="Спросите Штатку или найдите сотрудника, документ, правило" aria-label="Поиск"><button type="button" class="chip-ai" data-soon>✦ AI-помощник</button></div>
+   <div class="scope"><button type="button" class="ibtn" id="scopeBtn" aria-haspopup="true" aria-expanded="false"><span id="scopeName">Вся компания</span> ▾</button><div class="pop" id="scopeMenu" hidden></div></div>
+   <button type="button" class="ibtn" data-soon aria-label="Уведомления"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+   <button type="button" class="cta" data-soon>+<span> Заявление</span></button>
+  </div>
+
+  <div class="hello"><div><h1 id="hello">Доброе утро</h1><p><span id="subline">Сегодня не на месте 3 человека. Ваших решений ждут 3 заявки.</span> <span class="demo-tag" id="demoTag">демо-данные</span></p></div>
+   <div class="hello-acts"><button type="button" class="tune-btn" id="demoToggle" hidden>Посмотреть на примере</button><a class="tune-btn" href="customize.html">Настроить главную</a></div></div>
+  <div class="demobar" id="demoBar" hidden><span>Это пример с вымышленными данными: так главная выглядит, когда сотрудники уже работают.</span><button type="button" class="b" id="demoOff">Вернуться к моим данным</button></div>
+
+  <div class="scopebar" id="scopebar" hidden></div>
+  <div class="hint" id="hint"><div><b>Это базовая главная. Сделайте её своей</b><span>13 готовых вариантов по отраслям или своя сборка: выберите блоки, порядок и размер, и закрепите как начальный экран.</span></div>
+   <a class="b d" href="customize.html" style="text-decoration:none">Выбрать вариант</a><button type="button" class="b x" id="hintX" aria-label="Скрыть подсказку">×</button></div>
+
+  <section class="grid" id="grid" aria-label="Блоки главной"></section>
+  <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
+ </main>
+</div>
+
+<nav class="bottom" id="bottom" aria-label="Быстрое меню"></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="cabinet-widgets.js"></script>
+<script src="home-store.js"></script>
+<script src="shell.js"></script>
+<script src="cabinet.js"></script>
+</body>
+</html>

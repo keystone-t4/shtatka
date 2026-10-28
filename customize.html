@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Настроить главную — Штатка</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<link rel="stylesheet" href="cabinet.css">
+<link rel="stylesheet" href="customize.css">
+</head>
+<body class="cz">
+<header class="czh">
+ <a class="back" href="cabinet.html">← В кабинет</a>
+ <div class="czt"><h1>Настроить главную</h1><p>Выберите готовый вариант или соберите свой, затем закрепите как начальный экран.</p></div>
+ <div class="stat" id="stat"><span>Начальный экран</span><b id="startName">—</b></div>
+</header>
+<nav class="tabs" role="tablist" aria-label="Разделы настройки">
+ <button type="button" role="tab" data-tab="variants">1 · Варианты</button>
+ <button type="button" role="tab" data-tab="builder">2 · Конструктор</button>
+ <button type="button" role="tab" data-tab="structure">3 · Структура компании</button>
+ <button type="button" role="tab" data-tab="menu">4 · Меню</button>
+ <button type="button" role="tab" data-tab="look">5 · Оформление</button>
+</nav>
+
+<main>
+<section id="p-variants" class="pane" role="tabpanel" aria-label="Варианты">
+ <div class="note"><b>Как это устроено.</b> Меню слева — это разделы, где вы работаете: люди, время, документы. Блоки на главной — сигналы: что сегодня горит и что ждёт вашего решения. Блок не повторяет раздел, а показывает только исключения и ведёт в нужный раздел.</div>
+ <h2>Готовые варианты по отраслям</h2>
+ <p class="lab">Каждый собран под утренний вопрос владельца такого бизнеса. Возьмите за основу и поправьте в конструкторе.</p>
+ <div class="gal" id="gal"></div>
+ <h2 style="margin-top:34px">Мои варианты</h2>
+ <div class="mine" id="mine"></div>
+</section>
+
+<section id="p-builder" class="pane editing" role="tabpanel" aria-label="Конструктор" hidden>
+ <div class="bhead">
+  <label class="f">Название варианта<input id="vName" placeholder="Например, «Для управляющего»" maxlength="60"></label>
+  <label class="f">Цифры в блоках — пример для<select id="vDemo"></select></label>
+  <div class="bst" id="bstate" aria-live="polite"></div>
+  <div class="bacts"><button type="button" class="b" id="bReset">Вернуть к основе</button><button type="button" class="b" id="bSave">Сохранить вариант</button><button type="button" class="b l" id="bPin">★ Сделать начальным экраном</button><a class="b d" href="cabinet.html" id="bOpen">Открыть главную</a></div>
+ </div>
+ <div class="suggest" id="suggest" hidden></div>
+ <div class="bwrap">
+  <aside class="pal" aria-label="Блоки"><details id="palD" open><summary>Блоки: добавить или убрать</summary>
+   <input id="pFind" type="search" placeholder="Найти блок" aria-label="Найти блок">
+   <div id="pal"></div></details>
+  </aside>
+  <div class="cvs">
+   <div class="cvh"><b>Так будет выглядеть главная</b><span class="lab" id="cnt"></span></div>
+   <p class="lab">Блоки идут слева направо и сверху вниз: цифра в углу показывает порядок. Перетаскивайте блоки, нажимайте ◀ ▶, меняйте размер S / M / L. Новые блоки можно перетащить из списка слева.</p>
+   <section class="grid" id="grid" aria-label="Макет главной"></section>
+  </div>
+ </div>
+</section>
+
+<section id="p-structure" class="pane" role="tabpanel" aria-label="Структура компании" hidden>
+ <h2>Структура компании</h2>
+ <p class="lab" style="max-width:720px">Если у вас несколько точек, проектов, городов или отделов, опишите их здесь. Тогда сверху на главной появится переключатель «Вся компания ▾», и вы увидите, что происходит в каждом подразделении, а в конструкторе станет доступен блок «По подразделениям». Если вы работаете как одна команда, пропустите этот шаг.</p>
+ <div class="ex"><label class="f">Подставить пример для отрасли<select id="exSel"></select></label><button type="button" class="b" id="exGo">Подставить пример</button></div>
+ <div class="units" id="units"></div>
+ <button type="button" class="b d" id="uAdd">+ Добавить подразделение</button>
+ <p class="lab" id="uSum" style="margin-top:12px"></p>
+ <div class="note" style="margin-top:20px"><b>Что дальше.</b> Сотрудник будет привязываться к подразделению при приёме на работу, а руководитель точки или отдела сможет видеть только свою часть. Это подключим на этапе разделов.</div>
+</section>
+
+<section id="p-menu" class="pane" role="tabpanel" aria-label="Меню" hidden>
+ <h2>Меню слева</h2>
+ <p class="lab" style="max-width:640px">Оставьте только нужные разделы и расставьте их по порядку. «Главная» всегда первая. Скрытый раздел не пропадает: его можно вернуть здесь.</p>
+ <div class="mlist" id="mlist"></div>
+ <label class="mchk"><input type="checkbox" id="stepsShow"> Показывать «Первые шаги» на главной</label>
+</section>
+
+<section id="p-look" class="pane" role="tabpanel" aria-label="Оформление" hidden>
+ <h2>Оформление</h2>
+ <h3 class="h3">Тема</h3>
+ <div class="seg" role="group" aria-label="Тема" style="max-width:420px"><button type="button" data-theme-set="auto">Как в системе</button><button type="button" data-theme-set="light">Светлая</button><button type="button" data-theme-set="dark">Тёмная</button></div>
+ <h3 class="h3">Цвет компании</h3>
+ <div class="sw" role="group" aria-label="Цвет компании"><button type="button" data-brand-set="night" style="background:#1F2B45" aria-label="Ночь"></button><button type="button" data-brand-set="forest" style="background:#173A2E" aria-label="Хвоя"></button><button type="button" data-brand-set="wine" style="background:#4A1F2B" aria-label="Бордо"></button><button type="button" data-brand-set="graphite" style="background:#2A2F36" aria-label="Графит"></button><button type="button" data-brand-set="ocean" style="background:#12476B" aria-label="Океан"></button></div>
+ <p class="lab" style="margin-top:22px">Настройки хранятся в этом браузере. Когда подключим сервер, они будут сохраняться в профиле компании и отдельно для каждой роли.</p>
+</section>
+</main>
+
+<dialog id="dlg" aria-label="Просмотр варианта">
+ <div class="dh"><div><h2 id="dT"></h2><p class="lab" id="dS"></p></div><button type="button" class="b x" id="dX" aria-label="Закрыть">×</button></div>
+ <div class="db"><img id="dImg" alt="Макет главной"><div><h3 class="h3" style="margin-top:0">Блоки по порядку</h3><ol id="dList"></ol></div></div>
+ <div class="df"><button type="button" class="b" id="dTake">Взять за основу</button><button type="button" class="b l" id="dPin">★ Сделать начальным экраном</button></div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+<script src="cabinet-widgets.js"></script>
+<script src="home-store.js"></script>
+<script src="customize.js"></script>
+</body>
+</html>

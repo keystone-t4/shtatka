@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люди — Штатка</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<link rel="stylesheet" href="cabinet.css">
+</head>
+<body data-page="people">
+<template id="logoTpl"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg></template>
+<div class="app">
+ <aside class="side" id="side" aria-label="Меню"></aside>
+ <main>
+  <div class="top"><button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button></div>
+  <div class="ph"><div><h1>Люди</h1><p id="pSub">Сотрудники, исполнители и их документы.</p></div>
+   <div class="acts" id="pActs" hidden><button type="button" class="b" data-open="upload">Загрузить договоры</button><button type="button" class="b d" data-open="add">+ Добавить сотрудника</button></div></div>
+  <div class="gate" id="gate" hidden><div><b>Компания не подтверждена</b><span>Данные сотрудников можно вносить после подтверждения: это защищает их персональные данные.</span></div><a class="b d" href="register.html#verify">Подтвердить компанию</a></div>
+  <section id="empty" class="cards3" aria-label="С чего начать">
+   <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><circle cx="10" cy="8" r="4"/><path d="M3 20c1-4 4-6 7-6s6 2 7 6M19 8v6M16 11h6"/></svg></div><h2>Принять нового</h2><p>Внесите ФИО и должность. Остальное сотрудник заполнит сам по ссылке, а мы подготовим договор, приказ и согласия.</p><button type="button" class="b d" data-open="add">Добавить сотрудника</button></div>
+   <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg></div><h2>Загрузить действующих</h2><p>Фото или скан трудовых договоров. Достанем ФИО, должность и даты и покажем, каких документов не хватает.</p><button type="button" class="b" data-open="upload">Загрузить договоры</button></div>
+   <div class="card lamp"><div class="ic" style="background:#F7EBDD"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="m9 14 2 2 4-5"/></svg></div><h2>Проверить договор бесплатно</h2><p>Пришлите ваш шаблон трудового договора без данных сотрудника: покажем главные риски. Подтверждать компанию для этого не нужно.</p><button type="button" class="b d" data-open="check">Загрузить шаблон</button></div>
+  </section>
+  <section id="list" class="emp" aria-label="Сотрудники" hidden></section>
+
+<dialog id="dAdd" aria-labelledby="dAddT"><form method="dialog" id="fAdd" novalidate>
+ <div class="dlg-h"><h2 id="dAddT">Добавить сотрудника</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b">
+  <div class="seg2" role="group" aria-label="Кто это"><button type="button" data-kind="new" aria-pressed="true">Новый сотрудник</button><button type="button" data-kind="existing" aria-pressed="false">Уже работает</button></div>
+  <label class="fld">ФИО<input id="eFio" autocomplete="off" placeholder="Иванов Иван Иванович" required></label>
+  <label class="fld">Должность<input id="ePos" placeholder="Например, бариста" required></label>
+  <div class="fld2"><label class="fld">Вид договора<select id="eCon"><option value="open">Трудовой бессрочный</option><option value="fixed">Трудовой срочный</option><option value="gph">Договор ГПХ</option><option value="self">Самозанятый</option></select></label>
+  <label class="fld"><span id="eStartL">Дата выхода</span><input id="eStart" type="date"></label></div>
+  <div class="fld2"><label class="fld">Подразделение<select id="eUnit"><option value="">Без подразделения</option></select></label>
+  <label class="fld">Телефон для анкеты<input id="ePhone" type="tel" placeholder="+7 900 000-00-00"></label></div>
+  <p class="note2" id="eNote">Паспорт, адрес и реквизиты сотрудник внесёт сам по ссылке с телефона.</p>
+  <p class="err" id="eErr" hidden></p>
+ </div>
+ <div class="dlg-f"><button type="button" class="b" data-close>Отмена</button><button type="submit" class="b d">Сохранить</button></div></form></dialog>
+
+<dialog id="dUp" aria-labelledby="dUpT">
+ <div class="dlg-h"><h2 id="dUpT">Загрузить договоры</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b">
+  <p id="upText" style="margin:0;color:var(--muted)">Фото или скан трудовых договоров, можно несколько сразу.</p>
+  <label class="drop" id="drop"><input type="file" id="upFiles" accept="image/*,application/pdf" multiple hidden><b>Выберите файлы</b><br><span>или перетащите сюда: JPG, PNG, PDF</span></label>
+  <div class="files" id="upList"></div>
+  <p class="note2" id="upNote" hidden></p>
+ </div>
+ <div class="dlg-f"><button type="button" class="b" data-close>Закрыть</button><button type="button" class="b d" id="upManual" hidden>Внести вручную по договору</button></div></dialog>
+
+<dialog id="dGate" aria-labelledby="dGateT">
+ <div class="dlg-h"><h2 id="dGateT">Сначала подтвердите компанию</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b"><p style="margin:0">Данные сотрудников — персональные данные. Вносить их можно, когда подтверждено, что вы представляете компанию: подписью руководителя или оплатой счёта с расчётного счёта.</p>
+  <p class="small" id="gDemo" hidden style="margin:0;color:var(--muted);font-size:13px">Демо-режим: можно продолжить без подтверждения, чтобы посмотреть, как это работает.</p></div>
+ <div class="dlg-f"><button type="button" class="b" id="gSkip" hidden>Продолжить в демо</button><a class="b d" href="register.html#verify" style="text-decoration:none">Подтвердить компанию</a></div></dialog>
+
+  <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
+ </main>
+</div>
+<nav class="bottom" id="bottom" aria-label="Быстрое меню"></nav>
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="cabinet-widgets.js"></script>
+<script src="home-store.js"></script>
+<script src="shell.js"></script>
+<script src="people.js"></script>
+</body>
+</html>

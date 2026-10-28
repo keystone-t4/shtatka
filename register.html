@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Регистрация — Штатка</title>
+<meta name="description" content="Регистрация компании в сервисе Штатка: ИНН, контакты, код из СМС и подтверждение компании.">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Штатка">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Onest:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<link rel="stylesheet" href="register.css">
+</head>
+<body>
+<header class="hd"><a class="logo" href="index.html"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg>Штатка</a><span class="hd-r">Уже зарегистрированы? <button type="button" class="lnk" id="loginLink">Войти</button></span></header>
+
+<div class="wrap">
+<main class="card" id="card">
+ <ol class="steps" aria-label="Шаги регистрации">
+  <li id="st1" class="on"><i>1</i><span>Компания</span></li><li class="ln" aria-hidden="true"></li>
+  <li id="st2"><i>2</i><span>Вы и контакты</span></li><li class="ln" aria-hidden="true"></li>
+  <li id="st3"><i>3</i><span>Код из СМС</span></li>
+ </ol>
+
+ <!-- Шаг 1 -->
+ <form id="f1" class="view" novalidate>
+  <div>
+   <h1>Начнём с <span>вашей компании</span></h1>
+   <p class="lead">Реквизиты подтянем из ЕГРЮЛ сами. Подходит ООО и ИП.</p>
+  </div>
+  <div>
+   <label for="inn">ИНН компании или ИП</label>
+   <div class="row"><input id="inn" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="10 или 12 цифр"><button class="btn" type="submit" id="findBtn">Найти</button></div>
+   <p class="hint">Нет под рукой? <button class="lnk" type="button" id="sampleInn">Подставить пример</button></p>
+   <p class="err" id="err1" role="alert" hidden></p>
+   <div class="company" id="company" hidden>
+    <span class="tag" id="coTag">Найдено в ЕГРЮЛ</span>
+    <b id="coName">ООО «Ваша компания»</b>
+    <span id="coMeta"></span><span id="coAddr"></span><span id="coHead"></span>
+   </div>
+   <div class="taken" id="taken" hidden>
+    <b>Эта компания уже есть в Штатке</b>
+    <span>Попросите доступ у администратора кабинета. Не знаете, кто её зарегистрировал? <a id="takenMail" href="#">Напишите нам</a>.</span>
+   </div>
+   <button class="btn wide" type="button" id="next1" hidden>Это моя компания, дальше</button>
+  </div>
+  <div class="foot1">
+   <div class="need"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><b>2 минуты, без оплаты и карты</b></div>
+   <p class="small">Самозанятый без ИП? <a id="selfMail" href="#">Напишите нам</a>.</p>
+  </div>
+ </form>
+
+ <!-- Шаг 2 -->
+ <form id="f2" class="view" novalidate hidden>
+  <div>
+   <h1>Расскажите <span>о себе</span></h1>
+   <p class="lead">Сюда придут код входа, счета и документы.</p>
+  </div>
+  <div class="grid2">
+   <div class="field full"><label for="fio">ФИО</label><input id="fio" autocomplete="name" placeholder="Иванов Иван Иванович"></div>
+   <div class="field full"><label for="role">Ваша должность</label>
+    <select id="role"><option value="head">Руководитель</option><option value="ip">Индивидуальный предприниматель</option><option value="hr">Кадровик</option><option value="acc">Бухгалтер</option><option value="manager">Управляющий</option><option value="admin">Администратор</option><option value="other">Другое</option></select></div>
+   <div class="field"><label for="phone">Телефон</label><input id="phone" type="tel" autocomplete="tel" placeholder="+7 900 000-00-00"></div>
+   <div class="field"><label for="email">Почта</label><input id="email" type="email" autocomplete="email" placeholder="you@company.ru"></div>
+  </div>
+  <div class="note" id="roleNote" hidden></div>
+  <div class="checks">
+   <label class="check"><input type="checkbox" id="cOffer"><span>Принимаю <a href="offer.html" target="_blank" rel="noopener">Договор-оферту</a> от имени компании <span class="req" aria-label="обязательно">*</span>
+    <details class="more"><summary>Когда он вступит в силу</summary>После подтверждения компании подписью или оплатой счёта. До этого вносить данные сотрудников нельзя.</details></span></label>
+   <label class="check"><input type="checkbox" id="cPd"><span>Даю <a href="consent.html" target="_blank" rel="noopener">согласие на обработку моих персональных данных</a> <span class="req" aria-label="обязательно">*</span></span></label>
+   <label class="check"><input type="checkbox" id="cAds"><span>Получать <a href="ads.html" target="_blank" rel="noopener">новости и предложения</a> (по желанию)</span></label>
+   <p class="small">Данные храним в России. <a href="policy.html" target="_blank" rel="noopener">Политика обработки данных</a></p>
+  </div>
+  <p class="err" id="err2" role="alert" hidden></p>
+  <div class="acts"><button class="btn ghost" type="button" id="back2">Назад</button><button class="btn" type="submit" id="next2" disabled>Получить код</button></div>
+ </form>
+
+ <!-- Шаг 3 -->
+ <form id="f3" class="view" novalidate hidden>
+  <div>
+   <h1>Код <span>из СМС</span></h1>
+   <p class="lead">Отправили код на <b id="phoneOut">+7</b>. <span id="smsHint">Демо: подойдут любые 4 цифры.</span></p>
+  </div>
+  <div>
+   <div class="code" id="code"><input inputmode="numeric" maxlength="1" aria-label="Цифра 1"><input inputmode="numeric" maxlength="1" aria-label="Цифра 2"><input inputmode="numeric" maxlength="1" aria-label="Цифра 3"><input inputmode="numeric" maxlength="1" aria-label="Цифра 4"></div>
+   <p class="hint" id="timer">Отправить код ещё раз через 59 с</p>
+   <p class="err" id="err3" role="alert" hidden></p>
+  </div>
+  <div class="acts"><button class="btn ghost" type="button" id="back3">Изменить номер</button><button class="btn" type="submit">Создать кабинет</button></div>
+ </form>
+
+ <!-- Готово и подтверждение компании -->
+ <section id="done" class="view" hidden aria-labelledby="doneTitle">
+  <div>
+   <div class="okmark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5F1E8" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg></div>
+   <h1 id="doneTitle">Кабинет создан</h1>
+   <p class="lead">Осталось подтвердить, что вы представляете <b id="doneCo">компанию</b>. Выберите удобный способ.</p>
+   <span class="status" id="vStatus">Компания не подтверждена</span>
+  </div>
+  <div class="methods" role="list">
+   <div class="m" role="listitem"><div class="mh"><b>Электронная подпись</b><span class="pill">около минуты</span></div>
+    <p>Руководителя или сотрудника с машиночитаемой доверенностью.</p><button class="btn sm" type="button" data-soon="Подпись подключим вместе с сервером: заявление о присоединении к оферте подписывается в кабинете">Подписать</button></div>
+   <div class="m" role="listitem"><div class="mh"><b>Оплата с расчётного счёта</b><span class="pill">после платежа</span></div>
+    <p>Выставим счёт и подтвердим, когда придёт оплата от компании.</p><button class="btn sm ghost" type="button" data-soon="Счёт будет формироваться в кабинете, когда подключим сервер и банковские реквизиты">Получить счёт</button></div>
+   <div class="m off" role="listitem"><div class="mh"><b>Через банк для бизнеса</b><span class="pill">позже</span></div>
+    <p>СберБизнес ID или Т-Бизнес ID.</p></div>
+  </div>
+  <div class="send" id="sendBox"><b>Подтверждать будет руководитель?</b><button class="btn sm ghost" type="button" id="copyLink">Скопировать ссылку</button></div>
+  <div class="acts"><a class="btn" href="cabinet.html" id="openCab">Открыть кабинет</a></div>
+  <p class="small" id="demoNote">До подтверждения в кабинете можно заполнить анкету компании и посмотреть пример. Сотрудников — после.</p>
+ </section>
+</main>
+
+<aside class="side">
+ <div class="street"><svg viewBox="0 0 520 210" preserveAspectRatio="xMidYMax meet" width="100%" aria-hidden="true">
+<rect y="190" width="520" height="20" fill="#2A3858"/>
+<!-- кофейня -->
+<rect x="22" y="70" width="150" height="120" fill="#F7EBDD"/><rect x="18" y="62" width="158" height="10" fill="#E8D5BC"/>
+<rect x="22" y="82" width="30" height="26" fill="#F2C38F"/><rect x="52" y="82" width="30" height="26" fill="#F5F1E8"/><rect x="82" y="82" width="30" height="26" fill="#F2C38F"/><rect x="112" y="82" width="30" height="26" fill="#F5F1E8"/><rect x="142" y="82" width="30" height="26" fill="#F2C38F"/>
+<rect x="36" y="118" width="72" height="58" rx="4" fill="#F2C38F"/>
+<rect x="60" y="140" width="24" height="20" rx="4" fill="#1F2B45"/><path d="M84 144h5a5 5 0 0 1 0 10h-5" fill="none" stroke="#1F2B45" stroke-width="3"/><path d="M66 136c-3-4 3-6 0-10M76 136c-3-4 3-6 0-10" fill="none" stroke="#1F2B45" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="122" y="118" width="38" height="72" fill="#1F2B45"/><rect x="128" y="124" width="26" height="30" fill="#F2C38F"/><circle cx="152" cy="168" r="2.6" fill="#F2C38F"/>
+<!-- магазин / ПВЗ -->
+<rect x="186" y="96" width="150" height="94" fill="#D6DCE6"/><rect x="182" y="88" width="158" height="10" fill="#C2CADB"/>
+<rect x="186" y="100" width="30" height="22" fill="#3F5E8F"/><rect x="216" y="100" width="30" height="22" fill="#F5F1E8"/><rect x="246" y="100" width="30" height="22" fill="#3F5E8F"/><rect x="276" y="100" width="30" height="22" fill="#F5F1E8"/><rect x="306" y="100" width="30" height="22" fill="#3F5E8F"/>
+<rect x="200" y="134" width="82" height="42" rx="4" fill="#F2C38F"/>
+<rect x="222" y="146" width="22" height="22" fill="#1F2B45"/><rect x="222" y="146" width="22" height="6" fill="#3F5E8F"/><rect x="231" y="146" width="4" height="22" fill="#F2C38F"/>
+<rect x="252" y="152" width="20" height="16" fill="#1F2B45"/><rect x="261" y="152" width="3" height="16" fill="#F2C38F"/>
+<rect x="294" y="134" width="30" height="56" fill="#1F2B45"/><rect x="299" y="140" width="20" height="22" fill="#F2C38F"/>
+<!-- склад -->
+<rect x="350" y="76" width="150" height="114" fill="#EAE6DC"/><rect x="346" y="68" width="158" height="10" fill="#C2CADB"/>
+<rect x="366" y="116" width="74" height="74" fill="#1F2B45"/><rect x="366" y="122" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="132" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="142" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="152" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="162" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="172" width="74" height="2.4" fill="#F2C38F" opacity=".55"/><rect x="366" y="182" width="74" height="2.4" fill="#F2C38F" opacity=".55"/>
+<rect x="454" y="98" width="32" height="28" rx="3" fill="#F2C38F"/><rect x="454" y="140" width="32" height="50" fill="#D6DCE6"/><rect x="458" y="146" width="24" height="3" fill="#1F2B45"/><rect x="458" y="154" width="24" height="3" fill="#1F2B45"/>
+<!-- люди -->
+<g><circle cx="179" cy="164" r="6" fill="#F2C38F"/><rect x="172" y="172" width="14" height="18" rx="5" fill="#F2C38F"/>
+<circle cx="343" cy="164" r="6" fill="#F5F1E8"/><rect x="336" y="172" width="14" height="18" rx="5" fill="#F5F1E8"/>
+<circle cx="508" cy="168" r="5.5" fill="#8DB8E6"/><rect x="502" y="175" width="12" height="15" rx="4.5" fill="#8DB8E6"/></g></svg></div>
+ <div class="body" id="sideAfter">
+  <h2>Что будет после регистрации</h2>
+  <div class="it"><i>1</i><div><b>Анкета за 10 минут</b><span>Режим работы, зарплата, отпуск.</span></div></div>
+  <div class="it"><i>2</i><div><b>Сотрудники заполняют сами</b><span>По ссылке, с телефона.</span></div></div>
+  <div class="it"><i>3</i><div><b>Документы готовы</b><span>Договор, приказ и согласие на каждого.</span></div></div>
+    <div class="price"><div><span>Помесячно</span><b>100 ₽</b><span>за сотрудника в месяц</span></div><div><span>За год</span><b>1 000 ₽</b><span>за сотрудника, ≈ 83 ₽ в месяц</span></div></div>
+ </div>
+ <div class="body" id="sideWhy" hidden>
+  <h2>Зачем подтверждать компанию</h2>
+  <div class="it"><i>1</i><div><b>Чужой не заведёт кабинет на вашу компанию</b><span>Одна компания — один кабинет.</span></div></div>
+  <div class="it"><i>2</i><div><b>Данные сотрудников под защитой</b><span>Их видят только те, кому доверила компания.</span></div></div>
+  <div class="it"><i>3</i><div><b>Нужно один раз</b><span>Можно сейчас или позже.</span></div></div>
+ </div>
+</aside>
+</div>
+
+<footer class="ft"><span>© Штатка · ООО «Инново», Санкт-Петербург</span><span><a href="policy.html">Политика обработки данных</a> · <a href="offer.html">Договор-оферта</a> · <a href="#" data-cookie-settings>Настройки cookie</a></span></footer>
+
+<div class="ck" id="ck" hidden role="region" aria-label="Настройки cookie">
+  <div class="ck-card">
+    <p>Мы используем cookie: необходимые — чтобы сайт работал, аналитические — чтобы понимать, что улучшить. Аналитику включим, только если вы разрешите. Подробнее — в <a href="cookie.html">согласии на cookie</a> и <a href="policy.html">Политике обработки данных</a>.</p>
+    <div class="ck-btns"><button class="ck-min" type="button" id="ckMin">Только необходимые</button><button class="ck-ok" type="button" id="ckOk">Принять</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="register.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

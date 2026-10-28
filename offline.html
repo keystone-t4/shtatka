@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Нет подключения — Штатка</title>
+<meta name="description" content="Нет подключения">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Штатка">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#F5F1E8;--ink:#1F2B45;--muted:#4E5A72;--line:#DDD8CC;--hi:#3F5E8F}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 'Onest',system-ui,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:600 21px 'Unbounded','Arial Black',sans-serif;letter-spacing:-.03em}
+.btn{font:600 14px 'Onest',sans-serif;border:0;border-radius:999px;padding:10px 16px;background:var(--ink);color:var(--bg);cursor:pointer;text-decoration:none}
+main{background:#FFFFFF;border:1px solid var(--line);border-radius:24px;margin-block:24px;padding:clamp(20px,4vw,48px)}
+h2{font:600 clamp(24px,3.4vw,32px)/1.2 'Unbounded','Arial Black',sans-serif;margin:0 0 6px;letter-spacing:-.02em;text-wrap:balance}
+h3{font:700 19px 'Onest',sans-serif;margin:28px 0 8px}
+h4{font:700 16px 'Onest',sans-serif;margin:18px 0 6px}
+p{margin:0 0 12px}ul{margin:0 0 12px;padding-left:22px}li{margin-bottom:6px}
+.doc-sub{color:var(--muted);font-size:14px}
+mark{background:#FBEFD6;color:#9A6400;padding:0 3px;border-radius:4px}
+.tbl{overflow-x:auto;margin:10px 0 16px}table{border-collapse:collapse;font-size:14px;min-width:620px}
+th,td{border:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}th{background:var(--ink);color:#F5F1E8}
+.others{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;padding-bottom:32px}.others a{color:var(--hi)}
+@media print{header,.others,.btn{display:none}main{border:0;margin:0;padding:0}body{background:#fff}}
+</style>
+
+</head>
+<body>
+<header><div class="wrap nav"><a class="logo" href="index.html"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg>Штатка</a></div></header>
+<div class="wrap"><main><h2>Нет подключения к интернету</h2><p>Документы и стартовая страница доступны офлайн. Регистрации нужен интернет — подключитесь и обновите страницу.</p><p><a class="btn" href="index.html">На главную</a></p></main></div>
+
+<script src="app.js"></script>
+</body>
+</html>

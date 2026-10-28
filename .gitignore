@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+
+# DB dumps and archives
+*.sql
+*.sql.gz
+*.zip
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+.vscode
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Ai agents files
+.claude

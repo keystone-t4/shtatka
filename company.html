@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Компания — Штатка</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<link rel="stylesheet" href="cabinet.css">
+</head>
+<body data-page="company">
+<template id="logoTpl"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg></template>
+<div class="app">
+ <aside class="side" id="side" aria-label="Меню"></aside>
+ <main>
+  <div class="top"><button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button></div>
+  <div class="ph"><div><h1>Компания</h1><p>Реквизиты, анкета компании и структура.</p></div></div>
+  <section class="cards3" style="margin-bottom:18px">
+   <div class="card"><h2 id="cName">Ваша компания</h2><p id="cMeta">ИНН из регистрации</p><span class="tag2" id="cStatus">Подтверждена</span><a class="b" id="cVerify" href="register.html#verify" hidden>Подтвердить компанию</a></div>
+   <div class="card"><h2>Структура</h2><p id="cUnits">Точки, проекты, города или отделы не заданы.</p><a class="b" href="customize.html#structure">Настроить структуру</a></div>
+   <div class="card"><h2>Тариф</h2><p id="cTariff">Тариф не выбран.</p><a class="b" href="tariff.html">Открыть тарифы</a></div>
+  </section>
+  <form class="form-card" id="fCo" novalidate>
+   <h2>Анкета компании</h2><p class="hint2">Эти данные попадут в договоры и приказы. Около 10 минут.</p>
+   <div class="fld2"><label class="fld">Руководитель, ФИО<input id="qHead" placeholder="Иванов Иван Иванович"></label><label class="fld">Должность руководителя<input id="qPost" placeholder="Генеральный директор"></label></div>
+   <div class="fld2"><label class="fld">Режим работы<select id="qMode"><option value="5/2">Пятидневка, 5/2</option><option value="shift">Сменный график</option><option value="2/2">График 2/2</option><option value="flex">Гибкий график</option></select></label>
+   <label class="fld">Рабочий день<input id="qHours" placeholder="09:00–18:00"></label></div>
+   <div class="fld2"><label class="fld">Дни выплаты зарплаты<input id="qPay" placeholder="Например, 10 и 25"></label><label class="fld">Ежегодный отпуск, дней<input id="qVac" type="number" min="28" max="60" value="28"></label></div>
+   <div class="fld2"><label class="fld">Испытательный срок по умолчанию<select id="qProb"><option value="0">Без испытательного срока</option><option value="1">1 месяц</option><option value="2">2 месяца</option><option value="3" selected>3 месяца</option></select></label><div></div></div>
+   <p class="err" id="qErr" hidden></p>
+   <div><button type="submit" class="b d">Сохранить анкету</button></div>
+  </form>
+
+  <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
+ </main>
+</div>
+<nav class="bottom" id="bottom" aria-label="Быстрое меню"></nav>
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="cabinet-widgets.js"></script>
+<script src="home-store.js"></script>
+<script src="shell.js"></script>
+<script src="company.js"></script>
+</body>
+</html>
