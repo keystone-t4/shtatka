@@ -111,3 +111,15 @@ input:focus,select:focus{box-shadow:inset 0 0 0 2px var(--ink)}
   .cando{grid-template-columns:1fr}
   .code input{width:58px;height:62px}
 }
+
+.kep-st{margin:6px 0 0;color:var(--muted)}.kep-st.ok{color:var(--ok)}.kep-st.bad{color:var(--crit)}
+.mchd{margin-top:12px}
+.kep-dlg{border:0;border-radius:20px;padding:0;max-width:min(480px,94vw);width:100%;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(10,16,30,.4)}.kep-dlg::backdrop{background:rgba(10,16,30,.55)}
+.kep-dlg form{padding:20px;display:flex;flex-direction:column;gap:12px}.kep-dlg h2{margin:0;font:600 18px var(--display)}
+.kep-list{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto}
+.kep-it{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}.kep-it small{display:block;color:var(--muted);font-size:12px}
+.kep-f{display:flex;gap:8px;justify-content:flex-end}
+
+.who{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:4px;margin-bottom:14px}
+.who button,.who a{flex:1;height:44px;display:flex;align-items:center;justify-content:center;border:0;border-radius:10px;background:none;font:inherit;font-weight:600;color:var(--muted);text-decoration:none;cursor:pointer}
+.who .on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}

@@ -1,0 +1,20 @@
+# Штатка: сервис сведений о компаниях (ЕГРЮЛ, реестр МСП). Файл: /etc/systemd/system/shtatka-company.service
+[Unit]
+Description=Shtatka company lookup (EGRUL, RMSP)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=shtatka
+WorkingDirectory=/opt/shtatka/server
+EnvironmentFile=/etc/shtatka/company.env
+ExecStart=/usr/bin/node /opt/shtatka/server/company-proxy.mjs
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -91,8 +91,14 @@ def('tasks',GROUPS[0],'Задания',['m','l'],'m','lamp',c=>{
   const it=D(c,'tasks',[['Просрочено','Отпуск за прошлый год не использован: 2 сотрудника','Запланировать'],['Через 9 дней','Истекает срочный договор: Ольга П.','Продлить'],['Документы','Нет согласия на персональные данные: 3 сотрудника','На подпись']]);
   return `<h2>Задания <span class="pill" style="background:#1F2B45;color:#F5F1E8">7</span></h2><div class="list">`+it.map(x=>`<div class="item act"><div class="t"><small>${x[0]}</small>${x[1]}</div>${B(x[2],'d')}</div>`).join('')+`</div>${MORE('+ ещё 4 задания →')}`;});
 def('shifts',GROUPS[0],'Смены и табель',['m','l'],'l','',c=>{
+  const SC=window.SHTATKA_SCH,H=HOME(),real=H&&H.real()&&!(H.state().demoView);
+  const LNK='<a class="more" href="time.html">График и табель →</a>';
+  if(SC&&real&&SC.active()&&SC.staff().length){const r=SC.today(),T=SC.types();
+    const tiles=T.map((t,i)=>[t.name+' '+SC.short(t),r.by[t.id]+' чел.',i===0?'lamp':i===1?'night':'']).concat([['Выходной или не назначено',r.off+' чел.','']]);
+    return `<h2>Смены сегодня</h2><div class="tiles">`+tiles.map(x=>`<div class="tile ${x[2]}"><span>${esc(x[0])}</span><b>${x[1]}</b></div>`).join('')+`</div>${LNK}`;}
+  if(real)return `<h2>Смены сегодня</h2><p class="muted">Смены появятся, когда составите график.</p>${LNK}`;
   const t=D(c,'shifts',[['День 08–20','6 человек','lamp'],['Ночь 20–08','5 человек','night'],['Выходной или отпуск','7 человек','']]);
-  return `<h2>${D(c,'shiftsTitle','Смены сегодня')}</h2><div class="tiles">`+t.map(x=>`<div class="tile ${x[2]}"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')+`</div>${MORE('График и табель за месяц →')}`;});
+  return `<h2>${D(c,'shiftsTitle','Смены сегодня')}</h2><div class="tiles">`+t.map(x=>`<div class="tile ${x[2]}"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')+`</div>${LNK}`;});
 def('expiry',GROUPS[1],'Документы со сроком',['m','l'],'m','',c=>{
   const it=D(c,'expiry',[['Срочный договор','Ольга П.','9 дней','crit'],['Медкнижка','Светлана Т.','12 дней','warn'],['Патент','Ахмед Р.','20 дней','warn'],['Водительское удостоверение','Сергей Л.','3 месяца','ok']]);
   return `<h2>Документы со сроком</h2><div class="list">`+it.map(x=>`<div class="item"><div class="t"><b>${x[0]}</b><small>${x[1]}</small></div><span class="pill ${x[3]}">${x[2]}</span></div>`).join('')+`</div>${MORE('Все документы со сроком →')}`;});

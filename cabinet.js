@@ -70,6 +70,11 @@ function realHtml(id,w){
     case 'contractors':{const r=e.filter(x=>x.contract==='gph'||x.contract==='self');
       return `<h2>Самозанятые и подрядчики</h2>`+(r.length?list(r.slice(0,3).map(x=>[x.fio,x.position||'',x.contract==='self'?'самозанятый':'ГПХ'])):'<p class="sub">Самозанятых и подрядчиков нет.</p>');}
     case 'hire':return `<h2>Принять человека</h2><p class="sub">Внесите ФИО и должность: остальное сотрудник заполнит по ссылке.</p><a class="b d" href="people.html#add" style="align-self:flex-start;text-decoration:none">Добавить сотрудника</a>`;
+    case 'shifts':{const SC=window.SHTATKA_SCH;
+      if(SC&&SC.active()&&SC.staff().length){const r=SC.today(),T=SC.types();
+        const tl=T.map((t,i)=>[t.name+' '+SC.short(t),r.by[t.id]+' чел.',i===0?'lamp':i===1?'night':'']).concat([['Выходной или не назначено',r.off+' чел.','']]);
+        return `<h2>Смены сегодня</h2><div class="tiles">`+tl.map(x=>`<div class="tile ${x[2]}"><span>${esc(x[0])}</span><b>${x[1]}</b></div>`).join('')+`</div><a class="more" href="time.html">График и табель →</a>`;}
+      return `<h2>Смены сегодня</h2><p class="sub">Смены появятся, когда составите график.</p><a class="more" href="time.html">Составить график →</a>`;}
     case 'units':return w.html({t:demo,d:{}});
   }
   if(w.sizes[0]==='s')return `<span class="lab">${esc(w.title)}</span><div class="big">${EMPTY[id]||'0'}</div><div><span class="pill">${esc(KPI_SUB[id]||'пока нет')}</span></div>`;

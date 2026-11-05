@@ -24,38 +24,30 @@ function show(id){
 }
 
 /* шаг 1: ИНН */
-function innOk(v){if(!/^\d{10}$|^\d{12}$/.test(v))return false;const d=v.split('').map(Number);
-  const c=k=>k.reduce((s,x,i)=>s+x*d[i],0)%11%10;
-  if(v.length===10)return c([2,4,10,3,5,9,4,6,8])===d[9];
-  return c([7,2,4,10,3,5,9,4,6,8])===d[10]&&c([3,7,2,4,10,3,5,9,4,6,8])===d[11];}
+const C=window.SHTATKA_COMPANY,innOk=C.innOk;
 const taken=inn=>get('shtatka-registrations',[]).some(r=>r&&r.company&&r.company.inn===inn);
 $('#sampleInn').addEventListener('click',()=>{$('#inn').value='7812345675';$('#inn').focus();});
 $('#inn').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,12);['#company','#next1','#err1','#taken'].forEach(s=>$(s).hidden=true);});
 function fillCompany(d){
-  company=d;$('#coName').textContent=d.name;$('#coMeta').textContent=d.meta;$('#coAddr').textContent=d.addr;$('#coHead').textContent=d.head;
-  $('#coTag').textContent=d.demo?'Пример реквизитов · демо-режим':'Найдено в ЕГРЮЛ';$('#coTag').classList.toggle('demo',!!d.demo);
+  company=d;$('#coName').textContent=d.name;$('#coMeta').textContent=d.meta;$('#coAddr').textContent=d.addr||'';$('#coHead').textContent=d.head;
+  const day=new Date(d.checkedAt||Date.now()).toLocaleDateString('ru-RU');
+  $('#coTag').textContent=d.demo?'Пример реквизитов · демо-режим':'Найдено: '+(d.sources||['ЕГРЮЛ']).join(', ')+' · '+day;$('#coTag').classList.toggle('demo',!!d.demo);
   $('#company').hidden=false;
   if(taken(d.inn)){$('#taken').hidden=false;$('#next1').hidden=true;return;}
   $('#next1').hidden=false;$('#next1').focus();
 }
+const ERR={not_found:'Компания с таким ИНН не найдена в ЕГРЮЛ/ЕГРИП. Проверьте цифры.',offline:'Не удалось получить данные из ЕГРЮЛ. Проверьте интернет и попробуйте ещё раз.'};
 $('#f1').addEventListener('submit',async e=>{
   e.preventDefault();const v=$('#inn').value.trim();$('#err1').hidden=true;
   if(!innOk(v)){$('#err1').hidden=false;$('#err1').textContent=v.length?'Проверьте ИНН: в цифрах ошибка. У компании 10 цифр, у ИП 12.':'Введите ИНН: 10 цифр для ООО или 12 для ИП.';return;}
-  const ip=v.length===12;
-  if(cfg.dadataToken){
-    const b=$('#findBtn');b.disabled=true;b.textContent='Ищем…';
-    try{
-      const r=await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','Authorization':'Token '+cfg.dadataToken},body:JSON.stringify({query:v,count:1})});
-      const j=await r.json(),s=(j.suggestions||[])[0];
-      if(!s){$('#err1').hidden=false;$('#err1').textContent='Компания с таким ИНН не найдена в ЕГРЮЛ. Проверьте цифры.';}
-      else{const d=s.data;
-        if(d.state&&d.state.status&&d.state.status!=='ACTIVE'){$('#err1').hidden=false;$('#err1').textContent='По данным ЕГРЮЛ компания не действует (статус: '+d.state.status+').';}
-        else fillCompany({inn:v,ip,name:s.value,ogrn:d.ogrn||'',kpp:d.kpp||'',meta:'ИНН '+v+(d.ogrn?' · ОГРН '+d.ogrn:'')+(d.kpp?' · КПП '+d.kpp:''),addr:(d.address&&d.address.value)||'',
-          headName:ip?((d.name&&d.name.full)||s.value.replace(/^ИП\s+/,'')):(d.management&&d.management.name)||'',head:d.management?((d.management.post||'Руководитель')+': '+d.management.name):(ip?'Индивидуальный предприниматель':'')});}
-    }catch(err){$('#err1').hidden=false;$('#err1').textContent='Не удалось связаться с ЕГРЮЛ. Проверьте интернет и попробуйте ещё раз.';}
-    b.disabled=false;b.textContent='Найти';return;}
-  fillCompany({inn:v,ip,demo:true,name:ip?'ИП Фамилия Имя Отчество':'ООО «Ваша компания»',meta:ip?('ИНН '+v+' · ОГРНИП 3XXXXXXXXXXXXXX'):('ИНН '+v+' · ОГРН 1XXXXXXXXXXXX · КПП 78XXXXXXX'),
-    addr:'г. Санкт-Петербург, адрес из ЕГРЮЛ',head:ip?'Индивидуальный предприниматель':'Генеральный директор: Фамилия Имя Отчество',headName:''});
+  const b=$('#findBtn');b.disabled=true;b.textContent='Ищем…';
+  const r=await C.lookup(v);
+  b.disabled=false;b.textContent='Найти';
+  if(!r.ok){$('#err1').hidden=false;$('#err1').textContent=ERR[r.reason]||ERR.offline;return;}
+  const c=r.company;
+  if(!C.active(c)){$('#err1').hidden=false;$('#err1').textContent='По данным ЕГРЮЛ компания '+(C.STATUS_RU[c.status]||'не действует')+(c.endDate?' с '+c.endDate:'')+'. Зарегистрировать её нельзя.';return;}
+  fillCompany({...c,meta:c.demo?(c.ip?'ИНН '+v+' · ОГРНИП 3XXXXXXXXXXXXXX':'ИНН '+v+' · ОГРН 1XXXXXXXXXXXX · КПП 78XXXXXXX'):C.meta(c),
+    addr:c.address,head:C.head(c)||(c.ip?'Индивидуальный предприниматель':''),headName:c.headName||''});
 });
 $('#next1').addEventListener('click',()=>{$('#role').value=company&&company.ip?'ip':'head';roleNote();show('f2');});
 
@@ -108,7 +100,8 @@ $('#f3').addEventListener('submit',async e=>{
       if(!r.ok)throw new Error(r.status);
     }catch(err){$('#err3').hidden=false;$('#err3').textContent='Не получилось создать кабинет: сервер не ответил. Попробуйте ещё раз через минуту.';return;}
   }else{const a=get('shtatka-registrations',[]);a.push(payload);put('shtatka-registrations',a);}
-  put('shtatka-session',{company:payload.company.name||'',inn:payload.company.inn,fio:payload.contact.fio,role:payload.contact.role,at:now,verified:false});
+  const pc=payload.company;
+  put('shtatka-session',{company:pc.name||'',inn:pc.inn,co:{ip:!!pc.ip,okved:pc.okved||null,okvedName:pc.okvedName||null,msp:pc.msp==null?null:pc.msp,taxSystem:pc.taxSystem||null,sources:pc.sources||[],checkedAt:pc.checkedAt||null,demo:!!pc.demo},fio:payload.contact.fio,role:payload.contact.role,at:now,verified:false});
   clearInterval(t);$('#err3').hidden=true;
   openDone(true);
 });
@@ -124,6 +117,41 @@ function openDone(fresh){
   if(s.verified){$('#vStatus').textContent='Компания подтверждена';$('#vStatus').classList.add('ok');}
   show('done');
 }
+/* подтверждение подписью (КЭП): server/esign.mjs проверяет сертификат, центр, ИНН и ОГРН по ЕГРЮЛ */
+const E=window.SHTATKA_ESIGN;
+const kst=(t,cls)=>{const e=$('#kepSt');e.hidden=!t;e.textContent=t||'';e.className='small kep-st'+(cls?' '+cls:'');};
+function markVerified(r){
+  const s=get('shtatka-session',{})||{};
+  put('shtatka-session',Object.assign(s,{verified:true,verifiedBy:{method:'kep',kind:r.identity.kind,fio:r.identity.fio,thumbprint:r.identity.thumbprint,at:new Date().toISOString()},kepToken:r.token}));
+  $('#vStatus').textContent='Компания подтверждена';$('#vStatus').classList.add('ok');$('#mchd').hidden=true;
+}
+$('#kepBtn').addEventListener('click',async()=>{
+  const s=get('shtatka-session',{})||{},b=$('#kepBtn');
+  if(!s.inn){toast('Сначала пройдите регистрацию.');return;}
+  b.disabled=true;kst('Ждём подпись… плагин попросит ПИН-код токена.');
+  const r=await E.run('register',{inn:s.inn});b.disabled=false;
+  if(!r.ok){kst(r.message,'bad');return;}
+  if(r.confirmed){markVerified(r);kst('Подпись принята: '+r.identity.fio+(r.identity.title?', '+r.identity.title:'')+'. Данные совпали с ЕГРЮЛ.','ok');toast('Компания подтверждена.');return;}
+  put('shtatka-session',Object.assign(s,{kepIdentity:{fio:r.identity.fio,kind:r.identity.kind,thumbprint:r.identity.thumbprint,at:new Date().toISOString()}}));
+  kst('Личность подтверждена: '+r.identity.fio+'. Чтобы подписывать за компанию, нужна доверенность.','ok');$('#mchd').hidden=false;
+});
+$('#mchdFiles').addEventListener('change',async e=>{
+  const fl=[...e.target.files];if(!fl.length)return;e.target.value='';
+  const xml=fl.find(f=>/\.xml$/i.test(f.name)),sig=fl.find(f=>/\.(sig|p7s|sgn|bin)$/i.test(f.name));
+  if(!xml||!sig){$('#mchdSt').textContent='Нужны оба файла: доверенность .xml и подпись руководителя (.sig, .p7s или .sgn).';return;}
+  const txt=await xml.text(),inn=((get('shtatka-session',{})||{}).inn)||'';
+  if(inn&&!txt.includes(inn)){$('#mchdSt').textContent='В доверенности нет ИНН вашей компании ('+inn+'). Проверьте, тот ли файл.';return;}
+  const s=get('shtatka-session',{})||{};put('shtatka-session',Object.assign(s,{mchd:{xml:xml.name,sig:sig.name,at:new Date().toISOString(),status:'pending'}}));
+  $('#mchdSt').textContent='Доверенность принята и ждёт проверки в реестре ФНС. Подтверждение компании придёт после проверки.';
+});
+$('#kepLogin').addEventListener('click',async()=>{
+  const r=await E.run('login');if(!r.ok){toast(r.message);return;}
+  const inn=r.identity.inn||r.identity.personInn,regs=get('shtatka-registrations',[])||[];
+  const hit=regs.find(x=>x&&x.company&&x.company.inn===inn);
+  if(hit){const c=hit.company;put('shtatka-session',{company:c.name||'',inn:c.inn,co:{ip:!!c.ip,okved:c.okved||null,msp:c.msp==null?null:c.msp,taxSystem:c.taxSystem||null},fio:hit.contact.fio,role:hit.contact.role,at:new Date().toISOString(),verified:!!r.confirmed,verifiedBy:{method:'kep',fio:r.identity.fio,thumbprint:r.identity.thumbprint,at:new Date().toISOString()},kepToken:r.token});location.href='cabinet.html';return;}
+  if(r.identity.inn){$('#inn').value=r.identity.inn;show('f1');toast('Подпись принята: '+r.identity.fio+'. Кабинета с этим ИНН в браузере нет — зарегистрируйтесь, подпись подтвердит компанию.');}
+  else toast('Подпись принята, но в ней нет ИНН организации. Введите ИНН компании при регистрации.');
+});
 $('#copyLink').addEventListener('click',async()=>{
   const url=location.href.split('#')[0]+'#verify';
   try{await navigator.clipboard.writeText(url);toast('Ссылка скопирована. В рабочей версии руководитель увидит по ней вашу заявку и подпишет её.');}

@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="fonts.css">
 <script src="config.js"></script>
 <link rel="stylesheet" href="cabinet.css">
+<link rel="stylesheet" href="time.css">
+<link rel="stylesheet" href="cdocs.css">
 </head>
 <body data-page="people">
 <template id="logoTpl"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg></template>
@@ -20,45 +22,108 @@
  <main>
   <div class="top"><button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button></div>
   <div class="ph"><div><h1>Люди</h1><p id="pSub">Сотрудники, исполнители и их документы.</p></div>
-   <div class="acts" id="pActs"><button type="button" class="b d" data-open="add">+ Принять</button><button type="button" class="b" data-open="fire">Уволить</button><button type="button" class="b" data-open="upload">Загрузить договоры</button><button type="button" class="b" data-open="bulk">Загрузить списком</button></div></div>
+   <div class="acts" id="pActs"><button type="button" class="b d" data-open="add">+ Принять</button><button type="button" class="b" data-open="fire">Уволить</button><button type="button" class="b" data-open="upload">Загрузить договоры</button><button type="button" class="b" data-invite="new">Отправить анкету</button><button type="button" class="b" id="akFile">Анкета из файла</button><button type="button" class="b" id="exp1c">Выгрузить для 1С</button><button type="button" class="b" id="expObj">Список для заказчика</button><button type="button" class="b" data-open="bulk">Загрузить списком</button></div></div>
   <div class="gate" id="gate" hidden><div><b>Компания не подтверждена</b><span>Данные сотрудников можно вносить после подтверждения: это защищает их персональные данные.</span></div><a class="b d" href="register.html#verify">Подтвердить компанию</a></div>
   <section id="empty" class="cards3" aria-label="С чего начать">
    <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><circle cx="10" cy="8" r="4"/><path d="M3 20c1-4 4-6 7-6s6 2 7 6M19 8v6M16 11h6"/></svg></div><h2>Принять нового</h2><p>Внесите ФИО и должность. Остальное сотрудник заполнит сам по ссылке, а мы подготовим договор, приказ и согласия.</p><button type="button" class="b d" data-open="add">Добавить сотрудника</button></div>
    <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg></div><h2>Загрузить действующих</h2><p>Фото или скан трудовых договоров. Достанем ФИО, должность и даты и покажем, каких документов не хватает.</p><button type="button" class="b" data-open="upload">Загрузить договоры</button></div>
    <div class="card lamp"><div class="ic" style="background:#F7EBDD"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2B45" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="m9 14 2 2 4-5"/></svg></div><h2>Проверить договор бесплатно</h2><p>Пришлите ваш шаблон трудового договора без данных сотрудника: покажем главные риски. Подтверждать компанию для этого не нужно.</p><button type="button" class="b d" data-open="check">Загрузить шаблон</button></div>
   </section>
+  <div class="inbox" id="inbox" hidden></div>
+  <input type="file" id="akImport" accept=".json,application/json" hidden>
   <section id="kpis" class="kpis" aria-label="Сводка" hidden></section>
   <section id="todo" class="blk" hidden></section>
+  <div class="vt" id="vt" hidden><div class="seg2" role="group" aria-label="Вид"><button type="button" data-view="list" aria-pressed="true">Список</button><button type="button" data-view="tree" aria-pressed="false">Структура</button></div></div>
   <section id="list" class="emp" aria-label="Сотрудники" hidden></section>
+  <section id="org" class="org" aria-label="Структура подчинённости" hidden></section>
 
-<dialog id="dAdd" aria-labelledby="dAddT"><form method="dialog" id="fAdd" novalidate>
+<dialog id="dAdd" class="wide" aria-labelledby="dAddT"><form method="dialog" id="fAdd" novalidate>
  <div class="dlg-h"><h2 id="dAddT">Принять сотрудника</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
- <div class="dlg-b">
+ <ol class="wz" id="wz"><li data-s="1" aria-current="step">1. Человек</li><li data-s="2">2. Договор</li></ol>
+ <div class="dlg-b" id="st1">
   <div class="seg2" role="group" aria-label="Кто это"><button type="button" data-kind="new" aria-pressed="true">Новый сотрудник</button><button type="button" data-kind="existing" aria-pressed="false">Уже работает</button></div>
-  <label class="fld">ФИО<input id="eFio" autocomplete="off" placeholder="Иванов Иван Иванович" required></label>
+  <p class="note2" id="ppFor" hidden>Иностранный работник: данные вносятся вручную. Копии паспорта, патента или РВП добавьте после приёма в карточке → «Личное дело».</p>
+  <section class="pp" aria-labelledby="ppT">
+   <div class="pp-h"><b id="ppT">Паспорт: заполним по фото</b><span>Сфотографируйте или выберите фото, скан, PDF. Или введите данные ниже вручную.</span></div>
+   <div class="pp-g"><div class="up" data-up="main"><div class="up-img" id="upImg_main"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17c.7-1.8 2-2.7 3.5-2.7s2.8.9 3.5 2.7M14 9h4M14 12.5h4"/></svg></div><div class="up-t"><b>Главный разворот</b><small>страница с фотографией</small>
+     <div class="up-b"><label class="b cam">Снять<input type="file" accept="image/*" capture="environment" data-file="main" hidden></label><label class="b">Из галереи, файл<input type="file" accept="image/*,application/pdf" data-file="main" hidden></label></div>
+     <small class="up-st" id="upSt_main" aria-live="polite"></small></div></div><div class="up" data-up="reg"><div class="up-img" id="upImg_reg"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 11.5h8M8 15h5"/><path d="M15 15.5l1.5 1.5 3-3"/></svg></div><div class="up-t"><b>Страница с пропиской</b><small>адрес регистрации</small>
+     <div class="up-b"><label class="b cam">Снять<input type="file" accept="image/*" capture="environment" data-file="reg" hidden></label><label class="b">Из галереи, файл<input type="file" accept="image/*,application/pdf" data-file="reg" hidden></label></div>
+     <small class="up-st" id="upSt_reg" aria-live="polite"></small></div></div><div class="up" data-up="snils"><div class="up-img" id="upImg_snils"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M7 10h6M7 13.5h10"/></svg></div><div class="up-t"><b>СНИЛС</b><small>уведомление АДИ-РЕГ или карточка</small>
+     <div class="up-b"><label class="b cam">Снять<input type="file" accept="image/*" capture="environment" data-file="snils" hidden></label><label class="b">Из галереи, файл<input type="file" accept="image/*,application/pdf" data-file="snils" hidden></label></div>
+     <small class="up-st" id="upSt_snils" aria-live="polite"></small></div></div></div>
+   <p class="pp-n" id="ppNote">Фото распознаёт Yandex Cloud на серверах в России и не сохраняет: после распознавания оно удаляется. Поля, заполненные по фото, подсвечены — проверьте их.</p>
+   <label class="chk"><input type="checkbox" id="eKeep" checked> Сохранить копии в личное дело сотрудника</label>
+  </section>
+  <div class="fld3"><label class="fld">Фамилия<input id="eSur" autocomplete="off" required></label><label class="fld">Имя<input id="eName" autocomplete="off" required></label><label class="fld">Отчество<input id="eMid" autocomplete="off" placeholder="если есть"></label></div>
   <div class="fld2"><div class="fld">Пол<div class="seg2" id="eSex"><button type="button" data-sex="m" aria-pressed="true">Мужской</button><button type="button" data-sex="f" aria-pressed="false">Женский</button></div></div>
   <label class="fld">Дата рождения<input id="eBirth" type="date" required></label></div>
+  <label class="fld">Место рождения<input id="eBPlace" placeholder="как в паспорте"></label>
   <label class="fld">Гражданство и право работать<select id="eReg"></select></label>
   <div id="boxFor" class="sub" hidden>
    <div class="fld2"><label class="fld">Страна<input id="eCountry" placeholder="Например, Узбекистан"></label>
-   <label class="fld">Номер документа<input id="ePermit" placeholder="Патент, РВП, разрешение"></label></div>
+   <label class="fld">Номер документа на работу<input id="ePermit" placeholder="Патент, РВП, разрешение"></label></div>
    <label class="fld">Документ действует до<input id="ePermitUntil" type="date"></label>
   </div>
+  <div class="fld3"><label class="fld">Паспорт: серия и номер<input id="ePass" inputmode="numeric" placeholder="0000 000000" autocomplete="off"></label><label class="fld">Дата выдачи<input id="ePassDate" type="date"></label><label class="fld">Код подразделения<input id="ePassCode" inputmode="numeric" placeholder="000-000" autocomplete="off"></label></div>
+  <label class="fld">Кем выдан<input id="ePassBy"></label>
+  <div class="fld2"><label class="fld">Адрес регистрации<input id="eAddr" placeholder="город, улица, дом, квартира"></label><label class="fld">Дата регистрации<input id="eAddrDate" type="date"></label></div>
+  <div class="fld3"><label class="fld">Телефон<input id="ePhone" type="tel" placeholder="+7 900 000-00-00"></label><label class="fld">СНИЛС<input id="eSnils" inputmode="numeric" placeholder="000-000-000 00"></label><label class="fld">ИНН<input id="eInnP" inputmode="numeric" maxlength="12" placeholder="12 цифр"></label></div>
+  <label class="fld">Электронная почта (для приглашения в кабинет)<input id="eEmail" type="email" inputmode="email" placeholder="name@example.ru" autocomplete="off"></label>
   <div id="boxMil" class="sub" hidden>
    <div class="fld2"><label class="fld">Категория запаса<select id="eMilCat"><option value="">Не знаю (уточним)</option></select></label>
    <label class="fld">Годность<select id="eFit"></select></label></div>
    <label class="chk" id="eVusW" hidden><input type="checkbox" id="eVus"> Есть военно-учётная специальность (ВУС)</label>
   </div>
-  <label class="fld">Должность<input id="ePos" placeholder="Например, бариста" required></label>
-  <div class="fld2"><label class="fld">Вид договора<select id="eCon"></select></label>
-  <label class="fld">Оклад, ₽ в месяц<input id="eSal" type="number" min="0" inputmode="numeric" placeholder="50000"></label></div>
-  <div class="fld2"><label class="fld"><span id="eStartL">Дата выхода</span><input id="eStart" type="date"></label>
-  <label class="fld">Телефон для анкеты<input id="ePhone" type="tel" placeholder="+7 900 000-00-00"></label></div>
-  <label class="fld" id="eUnitW">Подразделение<select id="eUnit"><option value="">Без подразделения</option></select></label>
-  <div class="prev" id="ePrev" aria-live="polite"></div>
-  <p class="err" id="eErr" hidden></p>
  </div>
- <div class="dlg-f"><button type="button" class="b" data-close>Отмена</button><button type="submit" class="b d">Принять</button></div></form></dialog>
+ <div class="dlg-b" id="st2" hidden>
+  <p class="who" id="eWho"></p>
+  <div class="fld2"><label class="fld">Должность (профессия)<input id="ePos" list="posList" placeholder="Например, бариста" required autocomplete="off"><datalist id="posList"></datalist></label>
+  <label class="fld">Вид договора<select id="eCon"></select></label></div>
+  <div class="fld2" id="eFixedW" hidden><label class="fld">Договор до<input id="eEnd" type="date"></label>
+  <label class="fld">Основание срочного договора<select id="eFixedWhy"><option value="absent">На время отсутствия работника</option><option value="season">Сезонная работа</option><option value="temp">Временная работа до 2 месяцев</option><option value="project">Определённая работа или проект</option><option value="pens">По соглашению: пенсионер, совместитель и др.</option></select></label></div>
+  <div class="fld3"><label class="fld"><span id="eSalL">Оклад, ₽ в месяц</span><input id="eSal" type="number" min="0" inputmode="numeric" placeholder="50000"></label>
+  <label class="fld" data-lab>Ставка<select id="eRate"><option value="1">Полная</option><option value="0.75">0,75</option><option value="0.5">0,5</option><option value="0.25">0,25</option></select></label>
+  <label class="fld"><span id="eStartL">Дата выхода</span><input id="eStart" type="date"></label></div>
+  <div class="fld2" data-lab><label class="fld">Испытательный срок<select id="eProb"><option value="0">Без испытательного срока</option><option value="1">1 месяц</option><option value="2">2 месяца</option><option value="3">3 месяца</option></select></label>
+  <label class="fld">Режим работы<select id="eMode"><option value="5/2">Пятидневка, 5/2</option><option value="shift">Сменный график</option><option value="2/2">График 2/2</option><option value="flex">Гибкий график</option></select></label></div>
+  <div class="fld2"><label class="fld" id="eUnitW">Подразделение<select id="eUnit"><option value="">Без подразделения</option></select></label>
+  <label class="fld">Руководитель<select id="eBoss"></select></label></div>
+  <div class="fld2" data-lab><label class="fld">Место работы<input id="ePlace" placeholder="адрес, если не по юрадресу"></label><label class="chk" style="align-self:end;height:46px"><input type="checkbox" id="eRemote"> Дистанционная работа</label></div>
+  <div class="sub" id="ePatW" hidden><label class="chk"><input type="checkbox" id="ePatN"> Получено уведомление ИФНС: НДФЛ уменьшаем на авансы по патенту</label><label class="fld">Аванс по патенту, ₽ в месяц<input id="ePatA" type="number" min="0" inputmode="numeric" placeholder="из чека об оплате патента"></label></div>
+  <div class="sub" id="eSelfW" hidden><div class="row2" style="align-items:center"><span class="grow">ИНН самозанятого: <b id="eSelfInn">не указан на шаге 1</b></span><button type="button" class="b" data-npd="form">Проверить в ФНС</button></div><small class="up-st" id="eSelfSt" aria-live="polite">Статус проверяют перед договором и перед каждой выплатой.</small></div>
+  <label class="chk" id="eGphW" hidden><input type="checkbox" id="eGphInj"> В договоре ГПХ есть условие о взносах на травматизм</label>
+  <label class="fld adv-ind">Сфера компании <small class="lite" id="eIndSrc"></small><select id="eInd"></select></label>
+  <div class="adv" id="eAdv" aria-live="polite"></div>
+  <div class="prev" id="ePrev" aria-live="polite"></div>
+ </div>
+ <p class="err" id="eErr" hidden style="margin:0 22px 12px"></p>
+ <div class="dlg-f" id="ft1"><button type="button" class="b" data-close>Отмена</button><button type="button" class="b d" id="toSt2">Далее: договор →</button></div>
+ <div class="dlg-f" id="ft2" hidden><button type="button" class="b" id="toSt1">← Назад</button><button type="submit" class="b d" id="eSubmit">Принять и создать договор</button></div>
+</form></dialog>
+
+<dialog id="dCab" aria-labelledby="cabT"><form method="dialog" novalidate id="fCab">
+ <div class="dlg-h"><h2 id="cabT">Пригласить в Штатку</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b" id="cabB"></div>
+ <div class="dlg-f" id="cabF"></div>
+</form></dialog>
+<dialog id="dVac" aria-labelledby="vacT"><form method="dialog" novalidate>
+ <div class="dlg-h"><h2 id="vacT">Заявление на отпуск</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b" id="vacB"></div>
+ <div class="dlg-f"><button type="button" class="b" id="vacNo">Не согласен</button><button type="button" class="b d" id="vacOk">Согласовать</button></div>
+</form></dialog>
+<dialog id="dInv" aria-labelledby="dInvT"><form method="dialog" id="fInv" novalidate>
+ <div class="dlg-h"><h2 id="dInvT">Отправить анкету человеку</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
+ <div class="dlg-b">
+  <p class="muted" style="margin:0">Человек сам сфотографирует паспорт и СНИЛС и приложит документы, которые нужны именно для этой работы. Вам останется проверить.</p>
+  <div class="fld2"><label class="fld">Как зовут (для приветствия)<input id="iFirst" placeholder="Иван"></label><label class="fld">Должность<input id="iPos" list="posList2" placeholder="Например, бариста" autocomplete="off"><datalist id="posList2"></datalist></label></div>
+  <div class="fld2"><label class="fld">Гражданство<select id="iReg"><option value="ru">Гражданин РФ</option><option value="patent">Иностранец по патенту</option><option value="permit">Иностранец с разрешением на работу</option><option value="rvp">С РВП или ВНЖ</option><option value="eaeu">Гражданин ЕАЭС</option><option value="hqs">Высококвалифицированный специалист</option></select></label>
+  <label class="chk" style="align-self:end;height:46px"><input type="checkbox" id="iRem"> Дистанционная работа</label></div>
+  <div class="adv" id="iAdv" aria-live="polite"></div>
+  <label class="fld">Ссылка для человека<input id="iLink" readonly></label>
+  <p class="note2" id="iNote">Ссылка действует 7 дней. Паспортные данные в ней не передаются: в ссылке только имя, должность и список нужных документов.</p>
+ </div>
+ <div class="dlg-f"><button type="button" class="b" id="iCopy">Скопировать ссылку</button><button type="button" class="b d" id="iShare">Отправить</button></div></form></dialog>
 
 <dialog id="dBulk" aria-labelledby="dBulkT"><form method="dialog" id="fBulk" novalidate>
  <div class="dlg-h"><h2 id="dBulkT">Загрузить действующих списком</h2><button type="button" class="b x" data-close aria-label="Закрыть">×</button></div>
@@ -115,8 +180,16 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="cabinet-widgets.js"></script>
 <script src="home-store.js"></script>
+<script src="contract-template.js"></script>
 <script src="hr-core.js"></script>
+<script src="jobs.js"></script>
+<script src="schedule.js"></script>
+<script src="me-core.js"></script>
 <script src="shell.js"></script>
+<script src="company-data.js"></script>
+<script src="passport.js"></script>
+<script src="dossier.js"></script>
+<script src="company-docs.js"></script>
 <script src="people.js"></script>
 </body>
 </html>

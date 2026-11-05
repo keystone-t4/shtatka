@@ -1,0 +1,30 @@
+:root{--bg:#F5F1E8;--surface:#fff;--sand:#EAE6DC;--line:#DDD8CC;--ink:#1F2B45;--muted:#4E5A72;--lamp:#F2C38F;--blue:#3F5E8F;--ok:#2F7D5B;--crit:#B3261E;--crit-bg:#FBE4E1;--info-bg:#E2ECF6;--display:'Unbounded',system-ui,Arial,sans-serif;--body:'Onest',system-ui,Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+.ak{max-width:640px;margin:0 auto;padding:14px 14px 40px;display:flex;flex-direction:column;gap:12px}
+.ak-h{padding:6px 4px}.ak-logo{display:inline-flex;gap:8px;align-items:center;font:600 20px var(--display);letter-spacing:-.03em}
+.ak-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+h1{font:600 22px/1.2 var(--display);margin:0}h2{font:600 17px/1.25 var(--display);margin:0}
+.lead{margin:0}.small{margin:0;font-size:13px;color:var(--muted)}.lite{font-weight:400;opacity:.8}
+.ak-ul{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.g2>*,.g3>*{min-width:0}
+.fld{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+.fld input,.fld select{height:48px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:0 12px;font:inherit;font-weight:400;width:100%}
+.fld input.auto{background:var(--info-bg);box-shadow:inset 0 0 0 1.5px #2D5E8C}
+.fld input:focus,.fld select:focus{outline:3px solid var(--lamp);outline-offset:1px}
+.seg{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px;height:48px}.seg button{flex:1;border:0;background:none;border-radius:9px;font:inherit;font-weight:600;color:var(--muted)}.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px}.chk input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--blue);flex:none}
+.ak-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.up{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}.up b{font-size:14px}.up>small{color:var(--muted);font-size:12px}
+.up-b{display:flex;gap:8px;flex-wrap:wrap}
+.b{border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:11px 14px;font-weight:600;font-size:14px;cursor:pointer;flex:1;text-align:center;color:var(--ink)}
+.b.cam{background:var(--ink);color:var(--bg);border-color:transparent}
+.st{font-size:12px;color:var(--muted)}.st.ok{color:var(--ok)}.st.bad{color:var(--crit)}
+.doc{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}.doc b{font-size:14px}.doc small{color:var(--muted)}
+.btn{height:54px;border-radius:16px;border:0;background:var(--ink);color:var(--bg);font:600 16px var(--body);cursor:pointer}.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);margin-top:6px}
+.err{margin:0;background:var(--crit-bg);color:var(--crit);border-radius:12px;padding:10px 14px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;opacity:0;transition:.2s;pointer-events:none;max-width:90vw;font-size:14px}.toast.on{opacity:1;transform:translate(-50%,0)}
+[hidden]{display:none!important}
+@media(max-width:520px){.g3{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
+@media(prefers-color-scheme:dark){:root{--bg:#121A2B;--surface:#1A2438;--sand:#22304A;--line:#2E3D5A;--ink:#EEF0F5;--muted:#A7B0C2;--info-bg:#1B2E44;--ok:#6FCB9F;--crit:#F08A80;--crit-bg:#3C2224}.b.cam,.btn{background:var(--lamp);color:#121A2B}}
+#doneFile{display:flex;gap:8px;flex-wrap:wrap;align-items:center}#doneFile .small{flex:1 0 100%}#doneFile .btn{flex:1;margin:0;height:48px;padding:0 14px}

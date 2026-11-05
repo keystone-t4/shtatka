@@ -19,10 +19,11 @@
 <link rel="stylesheet" href="cookie.css">
 </head>
 <body>
-<header class="hd"><a class="logo" href="index.html"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg>Штатка</a><span class="hd-r">Уже зарегистрированы? <button type="button" class="lnk" id="loginLink">Войти</button></span></header>
+<header class="hd"><a class="logo" href="index.html"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg>Штатка</a><span class="hd-r">Уже зарегистрированы? <button type="button" class="lnk" id="loginLink">Войти</button> · <button type="button" class="lnk" id="kepLogin">по ЭЦП</button></span></header>
 
 <div class="wrap">
 <main class="card" id="card">
+ <div class="who" role="group" aria-label="Кто вы"><button type="button" class="on" aria-pressed="true">Я работодатель</button><a href="me.html" id="whoEmp">Я сотрудник</a></div>
  <ol class="steps" aria-label="Шаги регистрации">
   <li id="st1" class="on"><i>1</i><span>Компания</span></li><li class="ln" aria-hidden="true"></li>
   <li id="st2"><i>2</i><span>Вы и контакты</span></li><li class="ln" aria-hidden="true"></li>
@@ -106,12 +107,13 @@
   </div>
   <div class="methods" role="list">
    <div class="m" role="listitem"><div class="mh"><b>Электронная подпись</b><span class="pill">около минуты</span></div>
-    <p>Руководителя или сотрудника с машиночитаемой доверенностью.</p><button class="btn sm" type="button" data-soon="Подпись подключим вместе с сервером: заявление о присоединении к оферте подписывается в кабинете">Подписать</button></div>
+    <p>Руководителя или сотрудника с машиночитаемой доверенностью.</p><button class="btn sm" type="button" id="kepBtn">Подписать</button><p class="small kep-st" id="kepSt" aria-live="polite" hidden></p></div>
    <div class="m" role="listitem"><div class="mh"><b>Оплата с расчётного счёта</b><span class="pill">после платежа</span></div>
     <p>Выставим счёт и подтвердим, когда придёт оплата от компании.</p><button class="btn sm ghost" type="button" data-soon="Счёт будет формироваться в кабинете, когда подключим сервер и банковские реквизиты">Получить счёт</button></div>
    <div class="m off" role="listitem"><div class="mh"><b>Через банк для бизнеса</b><span class="pill">позже</span></div>
     <p>СберБизнес ID или Т-Бизнес ID.</p></div>
   </div>
+  <div class="m mchd" id="mchd" hidden><div class="mh"><b>Нужна доверенность</b></div><p>Подпись сотрудника подтверждает, кто вы, но не право действовать от компании. Приложите машиночитаемую доверенность (МЧД): файл доверенности .xml и файл подписи руководителя.</p><label class="btn sm ghost">Выбрать файлы<input type="file" id="mchdFiles" accept=".xml,.sig,.p7s,.sgn,.bin" multiple hidden></label><p class="small" id="mchdSt" aria-live="polite"></p></div>
   <div class="send" id="sendBox"><b>Подтверждать будет руководитель?</b><button class="btn sm ghost" type="button" id="copyLink">Скопировать ссылку</button></div>
   <div class="acts"><a class="btn" href="cabinet.html" id="openCab">Открыть кабинет</a></div>
   <p class="small" id="demoNote">До подтверждения в кабинете можно заполнить анкету компании и посмотреть пример. Сотрудников — после.</p>
@@ -162,6 +164,8 @@
 
 </div>
 <div class="toast" id="toast" role="status"></div>
+<script src="company-data.js"></script>
+<script src="esign.js"></script>
 <script src="register.js"></script>
 <script src="app.js"></script>
 <script src="cookie.js"></script>

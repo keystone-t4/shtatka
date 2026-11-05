@@ -7,6 +7,8 @@ const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;',
 const page=document.body.dataset.page||'home';
 const S=H.state();
 H.applyUi();
+/* график смен: один раз включаем пункт меню тем, у кого сфера со сменами; офисным компаниям он не нужен (можно включить в настройках меню) */
+try{const J=window.SHTATKA_JOBS;if(J&&!S.timeAuto){const id=J.industry().id;if(id){S.timeAuto=1;if(J.needsShifts(id,'',false)){const m=S.menu.find(x=>x.id==='time');if(m&&!m.on)m.on=true;}H.persist();}}}catch(e){}
 
 let tt;
 function toast(t){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),3200);}

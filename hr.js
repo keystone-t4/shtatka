@@ -66,14 +66,48 @@ sick(){
 payroll(){
   const now=new Date();let y=now.getFullYear(),m=now.getMonth();
   const mon=new Date(y,m,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
-  set('Зарплата','Расчёт на команду из окладов, отработанных дней и больничных. Оценка для планирования, не замена бухгалтерии.',exp('pay','Скачать для бухгалтера'));
-  const rows=R.payroll(y,m);
-  if(!rows.length)return out(empty('Расчёт появится, когда у сотрудников будут оклады.'));
-  const tot=k=>rows.reduce((a,r)=>a+r[k],0),co=H.state().company||{};
-  out(`<section class="kpis"><div class="kpi"><b>${rub(tot('gross'))}</b><span>начислено за ${esc(mon)}</span></div><div class="kpi"><b>${rub(tot('pay'))}</b><span>к выплате на руки</span></div><div class="kpi"><b>${rub(tot('contrib'))}</b><span>взносы, оценка 30,2%</span></div></section>
-  <p class="muted">Дни выплаты: ${co.pay?esc(co.pay):'не указаны, заполните анкету компании'}. Норма месяца: ${rows[0].norm} раб. дн. (без учёта праздников).</p>
-  <section class="blk">${tbl(['Сотрудник','Оклад','Отработано','Больничный','Начислено','НДФЛ','К выплате'],rows.map(r=>`<tr><td>${nameCell(r.e)}${r.low?'<small class="warnx">Оклад ниже МРОТ</small>':''}${r.e.out?'<small class="sub2">уволен '+d.fmt(r.e.out.date)+'</small>':''}</td><td>${rub(r.e.salary)}</td><td>${r.worked} из ${r.norm}</td><td>${r.sick?r.sick+' дн.':'—'}</td><td>${rub(r.gross)}</td><td>${rub(r.ndfl)}<small class="sub2">ставка ${Math.round(r.rate*100)}%, с начала года ${rub(r.ytd)}</small></td><td><b>${rub(r.pay)}</b></td></tr>`))}</section>
-  <section class="blk"><ul class="rules"><li>Начислено = оклад × отработанные дни ÷ норма. Для больничных учтены первые 3 дня за счёт работодателя по упрощённому среднему заработку.</li><li>НДФЛ по прогрессивной шкале нарастающим итогом с начала года: 13% с дохода до 2,4 млн ₽, 15% на часть от 2,4 до 5 млн, 18% от 5 до 20 млн, 20% от 20 до 50 млн, 22% свыше 50 млн. В месяце, где доход переходит порог, ставка выше. Вычеты, северные надбавки и патентников не учитываем. Прошлые месяцы считаем по текущему окладу. Проверить по ст. 224 НК РФ.</li><li>Страховые взносы и льготы малого бизнеса зависят от вашей ситуации: уточните у бухгалтера.</li><li>Принятые и уволенные в месяце считаются за фактические дни. ГПХ и самозанятые сюда не входят.</li></ul></section>`);
+  set('Зарплата','Начисления, НДФЛ, страховые взносы и травматизм по правилам 2026 года и данным вашей компании. Оценка для планирования, не замена бухгалтерии.',exp('pay','Скачать для бухгалтера'));
+  const rows=R.payroll(y,m),co=rows.co||R.payCo(),t=rows.tariff,C=window.SHTATKA_COMPANY,PR=window.SHTATKA_PAYROLL,ses=H.session()||{};
+  const tot=k=>rows.reduce((a,r)=>a+(r[k]||0),0),ca=H.state().company||{},ai=rows.ausnInjury||0;
+  const opt=(v,l,cur)=>`<option value="${v}"${String(cur==null?'':cur)===v?' selected':''}>${l}</option>`;
+  const set1=`<section class="blk" id="pCo"><div class="bh"><h2>Компания и тариф взносов</h2><span class="pill ${co.sources&&co.sources.length?'ok':''}">${co.sources&&co.sources.length?esc(co.sources.join(', '))+' · '+new Date(co.checkedAt).toLocaleDateString('ru-RU'):'заполните или загрузите по ИНН'}</span></div>
+   <div class="fld2"><label class="fld">ИНН<input id="pInn" inputmode="numeric" maxlength="12" value="${esc(co.inn||ses.inn||'')}" placeholder="10 или 12 цифр"></label><div class="fld"><span>&nbsp;</span><button type="button" class="b d" id="pFind" style="height:46px">Загрузить из ЕГРЮЛ</button></div></div>
+   ${co.name?`<p class="muted"><b>${esc(co.name)}</b>${co.okvedName?' · ОКВЭД '+esc(co.okved)+' — '+esc(co.okvedName):''}</p>`:''}
+   <p class="err" id="pErr" hidden></p>
+   <div class="fld2"><label class="fld">Реестр МСП<select id="pMsp">${opt('','Нет данных',co.msp)}${opt('micro','Микропредприятие',co.msp)}${opt('small','Малое предприятие',co.msp)}${opt('medium','Среднее предприятие',co.msp)}${opt('none','Не состоит',co.msp)}</select></label>
+   <label class="fld">Основной ОКВЭД<input id="pOkved" value="${esc(co.okved||'')}" placeholder="Например, 56.10"></label></div>
+   <div class="fld2"><label class="fld">Налоговый режим<select id="pTax">${opt('osn','ОСНО',co.taxSystem)}${opt('usn','УСН',co.taxSystem)}${opt('ausn','АУСН',co.taxSystem)}${opt('eshn','ЕСХН',co.taxSystem)}${opt('psn','ПСН (ИП)',co.taxSystem)}</select></label>
+   <label class="fld">Травматизм, % (из уведомления СФР)<input id="pInj" type="number" min="0.2" max="8.5" step="0.1" value="${esc(co.injury)}"></label></div>
+   <div class="fld2"><label class="fld">Скидка к травматизму, % (решение СФР, до 40)<input id="pDisc" type="number" min="0" max="40" step="1" value="${esc(co.injuryDisc||0)}"></label><div></div></div>
+   <label class="chk"><input type="checkbox" id="p70"${co.share70?' checked':''}> Доход от основного вида деятельности — не меньше 70 %</label>
+   <label class="chk"><input type="checkbox" id="pIt"${co.it?' checked':''}> Аккредитованная IT-компания</label>
+   ${t?`<div class="st ${t.kind==='general'?'':'in'}" style="margin-top:12px"><b>${esc(t.title)}</b><span>${(t.why||[]).map(esc).join(' · ')}</span></div>`:''}</section>`;
+  if(!rows.length)return out(set1+empty('Расчёт появится, когда у сотрудников будут оклады.'));
+  const F=PR?PR.R:{mrot:27093,base:2979000};
+  out(`<section class="kpis"><div class="kpi"><b>${rub(tot('gross'))}</b><span>начислено за ${esc(mon)}</span></div><div class="kpi"><b>${rub(tot('pay'))}</b><span>к выплате на руки</span></div><div class="kpi"><b>${rub(tot('contrib'))}</b><span>страховые взносы</span></div><div class="kpi"><b>${rub(tot('injury')+ai)}</b><span>травматизм</span></div><div class="kpi"><b>${rub(tot('budget')+ai)}</b><span>в бюджет: НДФЛ, взносы, травматизм</span></div><div class="kpi"><b>${rub(tot('cost')+ai)}</b><span>расходы компании</span></div></section>
+  ${set1}
+  <p class="muted">Дни выплаты: ${ca.pay?esc(ca.pay):'не указаны, заполните анкету компании'}. Норма месяца: ${rows[0].norm} раб. дн. (без учёта праздников).</p>
+  <section class="blk">${tbl(['Сотрудник','Оклад','Отработано','Начислено','НДФЛ','К выплате','Взносы','Травматизм','Расходы'],rows.map(r=>`<tr><td>${nameCell(r.e)}${r.low?'<small class="warnx">Оклад ниже МРОТ</small>':''}${r.headMin?'<small class="sub2">взносы с МРОТ: руководитель</small>':''}${r.e.out?'<small class="sub2">уволен '+d.fmt(r.e.out.date)+'</small>':''}</td><td>${rub(r.e.salary)}</td><td>${r.worked} из ${r.norm}${r.sick?'<small class="sub2">больничный '+r.sick+' дн.</small>':''}</td><td>${rub(r.gross)}</td><td>${rub(r.ndfl)}<small class="sub2">ставка ${Math.round(r.rate*100)}%, с начала года ${rub(r.ytd)}</small></td><td><b>${rub(r.pay)}</b></td><td>${rub(r.contrib)}<small class="sub2">основной ${rub(r.main)}${r.extra?', доп. '+Math.round(r.xRate*100)+'% '+rub(r.extra):''}</small><small class="sub2">база ${rub(r.base)}, с начала года ${rub(r.cumBase+r.base)}</small></td><td>${rub(r.injury)}</td><td>${rub(r.cost)}</td></tr>`))}</section>
+  <section class="blk"><div class="bh"><h2>Взносы по слоям за ${esc(mon)}</h2></div>${tbl(['Слой','Что входит','Сумма'],[
+   `<tr><td>1. Обязательное ядро</td><td>единый тариф по общим правилам: 30 % / 15,1 %</td><td>${rub(tot('mainGeneral'))}</td></tr>`,
+   `<tr><td>2. Льгота компании</td><td>${esc(t?t.title:'')}</td><td>${tot('main')<tot('mainGeneral')?'−'+rub(tot('mainGeneral')-tot('main')):'нет'}</td></tr>`,
+   `<tr><td>3. Надбавки</td><td>доп. тариф ОПС по СОУТ и спискам досрочной пенсии</td><td>${tot('extra')?rub(tot('extra')):'нет'}</td></tr>`,
+   `<tr><td>Травматизм</td><td>ставка ${(rows.injRate*100).toFixed(2).replace('.',',')} %${co.injuryDisc?' с учётом скидки '+co.injuryDisc+' %':''}${ai?', АУСН: фиксированный':''}</td><td>${rub(tot('injury')+ai)}</td></tr>`,
+   `<tr><td><b>Итого</b></td><td>взносы + травматизм</td><td><b>${rub(tot('contrib')+tot('injury')+ai)}</b></td></tr>`])}</section>
+  <section class="blk"><div class="bh"><h2>Формулы</h2></div><ul class="rules">
+   <li><b>Начислено</b> = оклад × отработанные дни ÷ норма дней + первые 3 дня больничного за счёт работодателя (оценка по среднему заработку).</li>
+   <li><b>НДФЛ за месяц</b> = НДФЛ(доход с 1 января, включая месяц) − НДФЛ(доход до месяца). Шкала: 13 % до 2,4 млн ₽, 15 % — 2,4–5 млн, 18 % — 5–20 млн, 20 % — 20–50 млн, 22 % свыше (ст. 224 НК).</li>
+   <li><b>База взносов</b> = начислено без больничного (пособие взносами не облагается, ст. 422 НК). За руководителя — не меньше МРОТ ${rub(F.mrot)} × дни в должности ÷ норма (ст. 421 НК).</li>
+   <li class="${t&&t.kind==='general'?'on':''}"><b>Общий тариф</b> = 30 % × база в пределах ${rub(F.base)} с начала года + 15,1 % × база сверх (ст. 425 НК).</li>
+   <li class="${t&&t.kind==='msp'?'on':''}"><b>МСП</b> (реестр МСП + основной ОКВЭД из перечня 4125-р + доход от него ≥ 70 %) = 30 % × min(база; 1,5 МРОТ = ${rub(F.mrot*1.5)}) + 15 % × остаток. Обрабатывающие производства (перечень 3689-р) — 7,6 % × остаток. Сверх предельной базы часть до 1,5 МРОТ — 15,1 % (ст. 427 НК).</li>
+   <li class="${t&&t.kind==='it'?'on':''}"><b>IT-компании</b> = 15 % × база в пределах ${rub(F.base)} + 7,6 % × сверх.</li>
+   <li class="${t&&t.kind==='ausn'?'on':''}"><b>АУСН</b>: взносов по единому тарифу нет, травматизм фиксированный — ${rub(F.ausnInjuryYear||2959)} в год.</li>
+   <li><b>Доп. тариф ОПС</b> = база × ставка, без предельной базы (ст. 428 НК): по СОУТ класс 3.1 — 2 %, 3.2 — 4 %, 3.3 — 6 %, 3.4 — 7 %, 4 — 8 %, классы 1–2 — 0 %; без СОУТ — список № 1 — 9 %, список № 2 и др. — 6 %. Задаётся в карточке сотрудника.</li>
+   <li><b>Травматизм</b> = начислено без больничного × ставка из уведомления СФР (0,2–8,5 % по классу риска основного ОКВЭД) × (1 − скидка, до 40 %).</li>
+   <li><b>В бюджет</b> = НДФЛ + взносы + травматизм. <b>Расходы компании</b> = начислено + взносы + травматизм.</li></ul>
+   <p class="muted">Прошлые месяцы года считаются по текущему окладу. Не учтены: вычеты НДФЛ, районные коэффициенты, нерезиденты и патентники. Ставки сверены 02.11.2026: МРОТ — 429-ФЗ, предельная база — постановление № 1705, тарифы — 425-ФЗ.</p></section>
+  <section class="blk"><div class="bh"><h2>Сроки уплаты</h2></div><ul class="rules"><li>НДФЛ, удержанный 1–22 числа, — до 28 числа того же месяца; 23-го — конца месяца — до 5 числа следующего.</li><li>Страховые взносы — до 28 числа следующего месяца, единым налоговым платежом; уведомление — до 25 числа.</li><li>Травматизм — в СФР до 15 числа следующего месяца.</li><li>ГПХ и самозанятые сюда не входят. Принятые и уволенные в месяце считаются за фактические дни.</li></ul></section>`);
+  bindPay();
 },
 archive(){
   const a=R.archived(),yrs=R.state().archiveYears||5;
@@ -106,6 +140,24 @@ laws(){
 }
 };
 
+function bindPay(){
+  const $$=id=>document.getElementById(id);if(!$$('pCo'))return;
+  const read=()=>{R.setPayCo({msp:$$('pMsp').value||null,okved:$$('pOkved').value.trim(),taxSystem:$$('pTax').value,injury:Math.min(8.5,Math.max(0.2,+$$('pInj').value||0.2)),injuryDisc:Math.min(40,Math.max(0,+$$('pDisc').value||0)),share70:$$('p70').checked,it:$$('pIt').checked});P.payroll();};
+  ['pMsp','pTax','p70','pIt'].forEach(id=>$$(id).addEventListener('change',read));
+  ['pOkved','pInj','pDisc'].forEach(id=>$$(id).addEventListener('change',read));
+  $$('pInn').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,12);});
+  $$('pFind').addEventListener('click',async()=>{
+    const C=window.SHTATKA_COMPANY,v=$$('pInn').value.trim(),er=$$('pErr'),b=$$('pFind');er.hidden=true;
+    if(!C.innOk(v)){er.hidden=false;er.textContent='Проверьте ИНН: у компании 10 цифр, у ИП 12.';return;}
+    b.disabled=true;b.textContent='Ищем…';const r=await C.lookup(v);b.disabled=false;b.textContent='Загрузить из ЕГРЮЛ';
+    if(!r.ok){er.hidden=false;er.textContent=r.reason==='not_found'?'Компания с таким ИНН не найдена в ЕГРЮЛ/ЕГРИП.':'Источники не ответили. Заполните поля вручную.';return;}
+    const c=r.company,o={inn:c.inn,name:c.name,ip:c.ip,okvedName:c.okvedName,sources:c.sources,checkedAt:c.checkedAt};
+    if(c.okved)o.okved=c.okved;if(c.msp!=null)o.msp=c.msp;if(c.taxSystem)o.taxSystem=c.taxSystem;
+    R.setPayCo(o);P.payroll();
+    const miss=[!c.okved&&'ОКВЭД',c.msp==null&&'статус МСП',!c.taxSystem&&'налоговый режим'].filter(Boolean);
+    toast(c.demo?'Демо-режим: источник ЕГРЮЛ не подключён.':miss.length?'В открытых данных нет: '+miss.join(', ')+'. Укажите вручную.':'Данные компании загружены.');
+  });
+}
 document.addEventListener('change',ev=>{
   const c=ev.target.closest('[data-task]');if(c){R.doneTask(c.dataset.eid,c.dataset.task,c.checked);P[page]();return;}
   if(ev.target.id==='aYrs'){R.setArchiveYears(+ev.target.value);P.archive();toast('Срок хранения изменён.');}
@@ -115,7 +167,7 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('button');if(!t)return;
   if(t.dataset.exp==='mil'){csv('voinskiy-uchet.csv',['ФИО','Дата рождения','Возраст','Должность','Статус','Основание','Военный билет','Звание','ВУС','Категория запаса','Годность'],R.active().map(e=>{const m=R.mil(e);return [e.fio,e.birth,R.age(e.birth),e.position,{in:'на учёте',check:'уточнить',out:'снять',no:'не ставится'}[m.st],m.why,e.milDoc||'',e.rank||'',e.vus||'',R.MILCAT[e.milCat]||'',R.FIT[e.fit]||''];}));return;}
   if(t.dataset.exp==='for'){csv('inostrancy.csv',['ФИО','Страна','Режим','Документ','Действует до','Начало работы','Состояние'],R.active().filter(e=>R.foreign(e)).map(e=>[e.fio,e.country,R.REGIME[e.regime],e.permitNo||'',e.permitUntil||'',e.start,R.foreign(e).msg]));return;}
-  if(t.dataset.exp==='pay'){const n=new Date();csv('zarplata-'+n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'.csv',['ФИО','Должность','Оклад','Норма дней','Отработано','Больничных дней','Начислено','НДФЛ','К выплате','Взносы (оценка)'],R.payroll(n.getFullYear(),n.getMonth()).map(r=>[r.e.fio,r.e.position,r.e.salary,r.norm,r.worked,r.sick,r.gross,r.ndfl,r.pay,r.contrib]));return;}
+  if(t.dataset.exp==='pay'){const n=new Date();csv('zarplata-'+n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'.csv',['ФИО','Должность','Оклад','Норма дней','Отработано','Больничных дней','Начислено','НДФЛ','К выплате','База взносов','Взносы основные','Доп. тариф ОПС','Взносы всего','Травматизм','Расходы компании'],R.payroll(n.getFullYear(),n.getMonth()).map(r=>[r.e.fio,r.e.position,r.e.salary,r.norm,r.worked,r.sick,r.gross,r.ndfl,r.pay,r.base,r.main,r.extra,r.contrib,r.injury,r.cost]));return;}
   if(t.dataset.restore){R.restore(t.dataset.restore);P.archive();toast('Сотрудник возвращён в штат.');}
   if(t.dataset.purge){if(t.dataset.arm){R.purge(t.dataset.purge);P.archive();toast('Данные сотрудника удалены.');}else{t.dataset.arm='1';t.textContent='Точно удалить?';setTimeout(()=>{if(t.isConnected){delete t.dataset.arm;t.textContent='Удалить';}},3000);}}
 });

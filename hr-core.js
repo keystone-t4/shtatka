@@ -24,7 +24,8 @@ const fmtD=s=>{const d=D(s);return d?d.toLocaleDateString('ru-RU'):'—';};
 const diffDays=(a,b)=>Math.round((D(b)-D(a))/864e5);
 
 /* ---------- справочники ---------- */
-const CONTRACT={open:'Трудовой бессрочный',fixed:'Трудовой срочный',gph:'Договор ГПХ',self:'Самозанятый'};
+const CONTRACT={open:'Трудовой бессрочный',fixed:'Трудовой срочный',gph:'Договор ГПХ (работы, услуги)',self:'Самозанятый',rent:'Аренда имущества у физлица'};
+const LABOR=c=>c==='open'||c==='fixed';
 const REGIME={ru:'Гражданин РФ',eaeu:'Гражданин ЕАЭС (Армения, Беларусь, Казахстан, Киргизия)',patent:'Иностранец по патенту',permit:'Иностранец с разрешением на работу',rvp:'С РВП или ВНЖ',hqs:'Высококвалифицированный специалист'};
 const MILCAT={soldier:'Рядовой, сержантский состав',jr:'Младший офицер',sr:'Старший офицер',hi:'Высший офицер'};
 const FIT={'':'не знаю','A':'А — годен','B':'Б — годен с незначительными ограничениями','V':'В — ограниченно годен','G':'Г — временно не годен','D':'Д — не годен'};
@@ -63,6 +64,8 @@ function seed(){
   ];
   E.forEach((e,i)=>{if(i===1)e.vacDays=14;e.tasks=hireTasks(e,true);e.tasks.forEach(k=>{if(k.due<addDays(t,-5))k.done=true;});e.log=[{at:new Date().toISOString(),t:'Принят на работу с '+fmtD(e.start)}];});
   E[0].sick=[{id:uid(),from:addDays(t,-2),to:addDays(t,3),no:'910 000 000 001',open:true}];
+  // демо: личные дела в основном собраны, у пары сотрудников есть пробелы — чтобы было видно, как это выглядит
+  E.forEach((e,i)=>{e.dossier={passport:{state:'shown'},snils:{state:i===3?'none':'shown'},pd:{state:'done'},etk:{state:'shown'},mil:{state:i===5?'none':'shown'},med:{state:i===2?'none':'shown'},fpass:{state:'shown'},rvp:{state:'shown'},patent:{state:'shown'},rkl:{state:'done'}};});
   E[1].etk.sfr={y:8,m:6,d:0,at:t};
   return {emps:E,archiveYears:5,mrotRegion:null,reg:'Санкт-Петербург'};
 }
@@ -233,43 +236,135 @@ const mrotNow=()=>ST.mrotRegion||MROT.y2026;
 const NDFL=[[2400000,.13],[5000000,.15],[20000000,.18],[50000000,.20],[Infinity,.22]];
 function ndflYear(inc){let tax=0,prev=0;for(const [lim,r] of NDFL){if(inc>prev)tax+=(Math.min(inc,lim)-prev)*r;prev=lim;if(inc<=lim)break;}return Math.round(tax);}
 const ndflRate=inc=>NDFL.find(x=>inc<=x[0])[1];
-function payroll(y,m){const rows=payrollMonth(y,m);
-  rows.forEach(r=>{let ytd=0;for(let k=0;k<m;k++){const o=payrollMonth(y,k).find(x=>x.e.id===r.e.id);if(o)ytd+=o.gross;}
-    r.ytd=ytd+r.gross;r.ndfl=ndflYear(ytd+r.gross)-ndflYear(ytd);r.rate=ndflRate(ytd+r.gross);r.pay=r.gross-r.ndfl;});
+/* ---------- платежи с зарплаты: взносы и травматизм (правила 2026 года — payroll-rules.js) ---------- */
+const PCO_KEY='shtatka-payroll-co';
+const PCO_DEF={msp:null,okved:'',taxSystem:'usn',injury:0.2,injuryDisc:0,share70:false,it:false};
+function payCo(){let o={};try{o=JSON.parse(localStorage.getItem(PCO_KEY))||{}}catch(x){}
+  const sc=(H.session()||{}).co||{};return Object.assign({},PCO_DEF,{msp:sc.msp==null?null:sc.msp,okved:sc.okved||'',taxSystem:sc.taxSystem||'usn'},o);}
+function setPayCo(v){try{localStorage.setItem(PCO_KEY,JSON.stringify(Object.assign(payCo(),v)))}catch(x){}}
+/* Руководитель организации: взносы с базы не меньше МРОТ (ст. 421 НК). Признак — флаг e.head или должность «(Генеральный) директор». */
+const isHead=e=>e.head!=null?!!e.head:/^(генеральный\s+)?директор$|^руководитель$/i.test(String(e.position||'').trim());
+function payroll(y,m){
+  const PR=window.SHTATKA_PAYROLL,co=payCo(),t=PR?PR.tariff(co):null,inj=(+co.injury||0.2)/100*(1-Math.min(40,Math.max(0,+co.injuryDisc||0))/100),gen=PR?PR.tariff({}):null;
+  const months=[];for(let k=0;k<=m;k++)months.push(payrollMonth(y,k));
+  const rows=months[m];
+  rows.forEach(r=>{
+    let ytd=0,cum=0;
+    for(let k=0;k<m;k++){const o=months[k].find(x=>x.e.id===r.e.id);if(o){ytd+=o.gross;cum+=o.base;}}
+    r.ytd=ytd+r.gross;r.ndfl=ndflYear(ytd+r.gross)-ndflYear(ytd);r.rate=ndflRate(ytd+r.gross);
+    // патент: НДФЛ уменьшается на фиксированные авансы за год, только после уведомления ИФНС (ст. 227.1 НК)
+    r.patentOff=0;
+    if(r.e.regime==='patent'&&r.e.patentNotice&&+r.e.patentAdv>0){
+      const adv=+r.e.patentAdv,s0=Math.max(0,new Date(r.e.start).getFullYear()===y?new Date(r.e.start).getMonth():0);
+      const advCum=k=>adv*Math.max(0,k-s0+1);
+      const cut=(nCum,k)=>Math.max(0,nCum-advCum(k));
+      const was=m>0?cut(ndflYear(ytd),m-1):0,now=cut(ndflYear(ytd+r.gross),m);
+      r.patentOff=Math.max(0,r.ndfl-(now-was));r.ndfl=now-was;}
+    r.pay=r.gross-r.ndfl;
+    r.cumBase=cum;
+    const r2=x=>Math.round(x*100)/100;
+    r.main=t?r2(PR.contribMonth(r.base,cum,t)):r2(r.base*0.30);          // слой 1–2: единый тариф с учётом льготы
+    r.mainGeneral=gen?r2(PR.contribMonth(r.base,cum,gen)):r.main;           // для сравнения: общий тариф
+    r.xRate=PR&&r.lab?PR.extraRate(r.e):0;r.extra=r2(r.base*r.xRate);              // слой 3: доп. тариф ОПС, без предельной базы
+    r.contrib=r2(r.main+r.extra);
+    r.injury=t&&t.kind==='ausn'?0:Math.round(r.injBase*inj*100)/100;
+    r.cost=Math.round((r.gross+r.contrib+r.injury)*100)/100;
+    r.budget=Math.round((r.ndfl+r.contrib+r.injury)*100)/100;
+  });
+  rows.tariff=t;rows.co=co;rows.injRate=inj;
+  rows.ausnInjury=t&&t.kind==='ausn'&&rows.length?Math.round(PR.R.ausnInjuryYear/12*100)/100:0;
   return rows;}
 function payrollMonth(y,m){
   const norm=workDaysIn(y,m),rows=[];
   const first=iso(new Date(y,m,1)),last=iso(new Date(y,m+1,0));
   ST.emps.forEach(e=>{
-    if(e.contract==='gph'||e.contract==='self')return;
+    if(e.contract==='self')return;   // самозанятый платит НПД сам: ни НДФЛ, ни взносов у заказчика
+    const lab=LABOR(e.contract);
     if(e.start>last)return;if(e.out&&e.out.date<first)return;
     const from=e.start>first?e.start:first,to=e.out&&e.out.date<last?e.out.date:last;
     let wd=0;for(let d=D(from);iso(d)<=to;d.setDate(d.getDate()+1)){const w=d.getDay();if(w!==0&&w!==6)wd++;}
     let sick=0;(e.sick||[]).forEach(s=>{for(let d=D(s.from>from?s.from:from);iso(d)<=(s.to<to?s.to:to);d.setDate(d.getDate()+1)){const w=d.getDay();if(w!==0&&w!==6){sick++;}}});
+    if(!lab)sick=0;   // больничные — только по трудовому договору
     const worked=Math.max(0,wd-sick);
     const sal=+e.salary||0;
     const accr=Math.round(sal*worked/norm);
     // больничный: первые 3 дня за счёт работодателя, дальше ФСС; здесь грубая оценка через дневной заработок
-    const daily=sal*12/730;const sickPay=Math.round(Math.min(sick,3)*daily*1);
+    const daily=sal*12/730;const sickPay=lab?Math.round(Math.min(sick,3)*daily*1):0;
     const gross=accr+sickPay,ndfl=Math.round(gross*0.13);
-    rows.push({e,norm,wd,sick,worked,accr,sickPay,gross,ndfl,pay:gross-ndfl,contrib:Math.round(gross*0.302),low:sal>0&&sal<mrotNow()});
+    const head=lab&&isHead(e),floor=head?Math.round(MROT.y2026*wd/norm*100)/100:0;
+    // база взносов: пособие по больничному не облагается (ст. 422 НК); аренда имущества — не объект (п. 4 ст. 420 НК);
+    // временно пребывающий ВКС не застрахован (ст. 7 167-ФЗ) — только травматизм
+    const noContrib=e.contract==='rent'||e.regime==='hqs';
+    const base=noContrib?0:Math.max(accr,floor);
+    // травматизм: трудовой договор — всегда; ГПХ — только если условие есть в договоре (ст. 20.1 125-ФЗ); аренда — нет
+    const injBase=lab?accr:(e.contract==='gph'&&e.gphInjury?accr:0);
+    rows.push({e,norm,wd,sick,worked,accr,sickPay,gross,ndfl,pay:gross-ndfl,base,injBase,noContrib,lab,head,headMin:base>accr&&!noContrib,low:lab&&sal>0&&sal<mrotNow()*(+e.rate||1)});
   });
   return rows;
 }
 
+/* ---------- структура подчинённости ---------- */
+const boss=e=>e&&e.managerId?ST.emps.find(x=>x.id===e.managerId&&!x.out)||null:null;
+const reports=id=>ST.emps.filter(x=>!x.out&&x.managerId===id);
+function under(id){const out=new Set(),q=[id];while(q.length){const c=q.shift();reports(c).forEach(x=>{if(!out.has(x.id)){out.add(x.id);q.push(x.id);}});}return out;}
+/* кого можно назначить руководителем: не сам человек и не его подчинённые (иначе цикл) */
+const bossOptions=id=>{const ban=id?under(id):new Set();return active().filter(x=>x.id!==id&&!ban.has(x.id));};
+function tree(){const act=active(),ids=new Set(act.map(e=>e.id));
+  const node=e=>({e,kids:act.filter(x=>x.managerId===e.id).map(node)});
+  return act.filter(e=>!e.managerId||!ids.has(e.managerId)).map(node);}
+
 /* ---------- документы ---------- */
 const DOCS=[
- ['td','Трудовой договор',e=>true],
- ['order','Приказ о приёме на работу (Т-1)',e=>true],
+ ['td','Трудовой договор',e=>LABOR(e.contract)],
+ ['gph','Договор ГПХ',e=>e.contract==='gph'],
+ ['rent','Договор аренды',e=>e.contract==='rent'],
+ ['self','Договор с самозанятым',e=>e.contract==='self'],
+ ['order','Приказ о приёме на работу (Т-1)',e=>LABOR(e.contract)],
+ ['mat','Договор о полной материальной ответственности',e=>LABOR(e.contract)&&!(age(e.birth)!=null&&age(e.birth)<18)&&(e.matResp||/кассир|продав|кладовщ|оператор пвз|пункт выдачи|экспедит|товаровед|администратор|бармен|официант/i.test(e.position||''))],
  ['pd','Согласие на обработку персональных данных',e=>true],
- ['card','Личная карточка (Т-2)',e=>true],
+ ['card','Личная карточка (Т-2)',e=>LABOR(e.contract)],
  ['mil','Сведения о приёме для военкомата',e=>!e.out&&['in','check'].includes(mil(e).st)],
  ['mvd','Данные для уведомления МВД',e=>!isRu(e)],
  ['fire','Приказ об увольнении (Т-8)',e=>!!e.out],
  ['milOut','Сведения об увольнении для военкомата',e=>!!e.out&&['in','check','out'].includes(mil(e,e.start).st)],
 ];
 const docsFor=e=>DOCS.filter(d=>d[2](e));
+/* сумма прописью: 45000 → «сорок пять тысяч рублей 00 копеек» */
+function words(n){n=Math.floor(+n||0);if(!n)return 'ноль рублей';
+  const u=[['','один','два','три','четыре','пять','шесть','семь','восемь','девять'],['','одна','две','три','четыре','пять','шесть','семь','восемь','девять']];
+  const t10=['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
+  const dz=['','','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
+  const hd=['','сто','двести','триста','четыреста','пятьсот','шестьсот','семьсот','восемьсот','девятьсот'];
+  const form=(x,a,b,c)=>{const m=x%100,k=x%10;return (m>10&&m<20)?c:k===1?a:(k>=2&&k<=4)?b:c;};
+  const tri=(x,g)=>{const h=Math.floor(x/100),r=x%100,o=[hd[h]];if(r>=10&&r<20)o.push(t10[r-10]);else{o.push(dz[Math.floor(r/10)]);o.push(u[g][r%10]);}return o.filter(Boolean).join(' ');};
+  const parts=[];const mln=Math.floor(n/1e6),th=Math.floor(n/1e3)%1000,rest=n%1000;
+  if(mln)parts.push(tri(mln,0)+' '+form(mln,'миллион','миллиона','миллионов'));
+  if(th)parts.push(tri(th,1)+' '+form(th,'тысяча','тысячи','тысяч'));
+  if(rest)parts.push(tri(rest,0));
+  return parts.join(' ')+' '+form(n,'рубль','рубля','рублей')+' 00 копеек';}
+const MODE={'5/2':'пятидневная рабочая неделя с двумя выходными','shift':'сменный график','2/2':'график 2/2','flex':'гибкий график'};
+const WHY={absent:'на время отсутствия основного работника',season:'сезонная работа',temp:'временная работа до 2 месяцев',project:'выполнение определённой работы',pens:'соглашение сторон, ст. 59 ТК РФ'};
+/* подстановка меток {{…}} в шаблон договора (contract-template.js) */
+function fillTpl(tpl,e){
+  const ses=H.session()||{},ca=(H.state().company)||{},pp=e.passport||{},b=boss(e),u=(H.units()||[]).find(x=>x.id===e.unit);
+  const F=x=>x==null||x===''?'__________':String(x).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const sp=(e.fio||'').split(/\s+/),short=sp[0]?sp[0]+' '+sp.slice(1).map(x=>x[0]+'.').join(''):'';
+  const cdate=e.contractAt&&e.contractAt<=today()?e.contractAt:today();
+  const V={org:ses.company,orgInn:ses.inn,orgHead:ca.head,orgHeadPost:ca.post?ca.post.toLowerCase():'генерального директора',city:ST.reg?'г. '+ST.reg:'',date:fmtD(cdate),
+    number:e.contractNo||((ST.emps.indexOf(e)+1)+'/'+cdate.slice(0,4)),fio:e.fio,fioShort:short,birth:e.birth?fmtD(e.birth):'',birthPlace:e.birthPlace,
+    passport:pp.series?pp.series+' '+pp.number:'',passportIssued:[pp.issuedBy,pp.issueDate?fmtD(pp.issueDate):'',pp.code?'код '+pp.code:''].filter(Boolean).join(', '),
+    regAddress:e.regAddress,snils:e.snils,inn:e.innP,phone:e.phone,position:e.position,
+    workPlace:e.workPlace||'по месту нахождения Работодателя',start:e.start?fmtD(e.start):'',end:e.contractEnd?'по '+fmtD(e.contractEnd):'до исполнения обязательств',
+    term:e.contract==='fixed'?'на определённый срок до '+(e.contractEnd?fmtD(e.contractEnd):'__________'):'на неопределённый срок',
+    probation:e.probation?e.probation+' мес.':'не устанавливается',mode:MODE[e.workMode||ca.mode]||MODE['5/2'],
+    rate:!e.rate||e.rate>=1?'полное рабочее время':'неполное рабочее время, '+String(e.rate).replace('.',',')+' ставки',
+    salary:e.salary?Number(e.salary).toLocaleString('ru-RU'):'',salaryWords:e.salary?words(e.salary):'',payDays:ca.pay,vacation:ca.vac||28,
+    manager:b?b.fio+(b.position?', '+b.position:''):'руководитель организации'};
+  const raw={unit:u?', подразделение «'+F(u.name)+'»':'',remote:e.remote?' Работа выполняется дистанционно (гл. 49.1 ТК РФ).':'',termReason:e.contract==='fixed'?' (основание: '+(WHY[e.fixedWhy]||'__________')+')':''};
+  return tpl.replace(/\{\{(\w+)\}\}/g,(m,k)=>k in raw?raw[k]:F(V[k]));
+}
 function docHtml(e,key){
+  const TP=window.SHTATKA_TPL||{};if(TP[key]&&['td','gph','rent','self','mat'].includes(key))return fillTpl(TP[key],e);
   const co=(H.session()||{}),F=x=>x||'__________';
   const org=F(co.company),inn=co.inn?', ИНН '+co.inn:'';
   const head='<p><b>'+org+'</b>'+inn+'</p>';
@@ -279,7 +374,7 @@ function docHtml(e,key){
    td:'<h3>Трудовой договор</h3>'+head+'<p>Работодатель и '+who+', дата рождения '+fmtD(e.birth)+', заключили договор о том, что работник принимается на должность «'+F(e.position)+'» с '+fmtD(e.start)+(e.contract==='fixed'?' на определённый срок':' на неопределённый срок')+'. Оклад: '+sal+'. Остальные условия по ст. 57 ТК вносит работодатель.</p><p class="d">Черновик по данным карточки. Перед подписью проверьте и дополните по ст. 57 ТК.</p>',
    order:'<h3>Приказ о приёме работника на работу (форма Т-1)</h3>'+head+'<p>Принять '+who+' на должность «'+F(e.position)+'» с '+fmtD(e.start)+(e.contract==='fixed'?', на определённый срок':', без испытательного срока или с ним по договору')+', оклад '+sal+'.</p><p>Руководитель ____________ &nbsp; Работник ознакомлен ____________</p>',
    pd:'<h3>Согласие на обработку персональных данных</h3>'+head+'<p>Я, '+who+', даю согласие оператору на обработку моих персональных данных в целях оформления и ведения трудовых отношений. Перечень данных, срок и порядок отзыва согласия указаны в приложенном перечне. Согласие оформляется отдельным документом.</p><p>Дата ____________ Подпись ____________</p>',
-   card:'<h3>Личная карточка работника (Т-2)</h3>'+head+'<table><tr><td>ФИО</td><td>'+F(e.fio)+'</td></tr><tr><td>Дата рождения</td><td>'+fmtD(e.birth)+'</td></tr><tr><td>Пол</td><td>'+(e.sex==='f'?'женский':'мужской')+'</td></tr><tr><td>Гражданство</td><td>'+F(e.country)+'</td></tr><tr><td>Должность</td><td>'+F(e.position)+'</td></tr><tr><td>Принят</td><td>'+fmtD(e.start)+'</td></tr><tr><td>Воинский учёт</td><td>'+(isRu(e)?(e.milDoc?F(e.milDoc)+', '+(MILCAT[e.milCat]||''):'данные внесите из военного билета'):'не ведётся (иностранный гражданин)')+'</td></tr><tr><td>Предыдущий стаж</td><td>'+fmtY(stazh(e).prev)+'</td></tr></table>',
+   card:'<h3>Личная карточка работника (Т-2)</h3>'+head+'<table><tr><td>ФИО</td><td>'+F(e.fio)+'</td></tr><tr><td>Дата рождения</td><td>'+fmtD(e.birth)+'</td></tr><tr><td>Пол</td><td>'+(e.sex==='f'?'женский':'мужской')+'</td></tr><tr><td>Гражданство</td><td>'+F(e.country)+'</td></tr><tr><td>Паспорт</td><td>'+F(e.passport&&e.passport.series?e.passport.series+' '+e.passport.number+', выдан '+(e.passport.issuedBy||'')+' '+(e.passport.issueDate?fmtD(e.passport.issueDate):''):'')+'</td></tr><tr><td>Адрес регистрации</td><td>'+F(e.regAddress)+'</td></tr><tr><td>СНИЛС, ИНН</td><td>'+F(e.snils)+', '+F(e.innP)+'</td></tr><tr><td>Должность</td><td>'+F(e.position)+'</td></tr><tr><td>Принят</td><td>'+fmtD(e.start)+'</td></tr><tr><td>Воинский учёт</td><td>'+(isRu(e)?(e.milDoc?F(e.milDoc)+', '+(MILCAT[e.milCat]||''):'данные внесите из военного билета'):'не ведётся (иностранный гражданин)')+'</td></tr><tr><td>Предыдущий стаж</td><td>'+fmtY(stazh(e).prev)+'</td></tr></table>',
    mil:'<h3>Сведения о принятом работнике для военного комиссариата</h3>'+head+'<p>Сообщаем, что с '+fmtD(e.start)+' принят '+who+', '+fmtD(e.birth)+' г. р., должность «'+F(e.position)+'». Воинское звание '+F(e.rank)+', ВУС '+F(e.vus)+', категория запаса: '+(MILCAT[e.milCat]||'')+', категория годности: '+(FIT[e.fit]||'')+'. Военный билет '+F(e.milDoc)+'.</p><p>Срок отправки: 5 рабочих дней. Сверьте с формой военкомата своего района.</p>',
    mvd:'<h3>Данные для уведомления МВД о приёме иностранного работника</h3>'+head+'<table><tr><td>ФИО</td><td>'+F(e.fio)+'</td></tr><tr><td>Гражданство</td><td>'+F(e.country)+'</td></tr><tr><td>Режим</td><td>'+(REGIME[e.regime]||'')+'</td></tr><tr><td>Документ</td><td>'+F(e.permitNo)+' до '+fmtD(e.permitUntil)+'</td></tr><tr><td>Должность</td><td>'+F(e.position)+'</td></tr><tr><td>Начало работы</td><td>'+fmtD(e.start)+'</td></tr></table><p class="d">Подаётся через Госуслуги или в территориальный орган МВД. Срок: 3 рабочих дня. С 01.09.2026 указывается срок действия договора и согласие иностранца на обработку данных (проверить).</p>',
    fire:e.out?'<h3>Приказ о прекращении трудового договора (форма Т-8)</h3>'+head+'<p>Прекратить действие трудового договора с '+who+', должность «'+F(e.position)+'», уволить '+fmtD(e.out.date)+'. Основание: '+(FIRE[e.out.reason]||{}).t+' ('+(FIRE[e.out.reason]||{}).a+').</p><p>Выплатить все причитающиеся суммы, включая компенсацию за неиспользованный отпуск. Руководитель ____________ &nbsp; Работник ознакомлен ____________</p>':'',
@@ -295,7 +390,7 @@ window.SHTATKA_HR={
   emps:()=>ST.emps,active,archived,onSick,get:id=>ST.emps.find(e=>e.id===id),
   hire,fire,restore,purge,remove,update,addSick,closeSick,doneTask,
   mil,foreign,stazh,fmtY,periods,age,vacation,
-  allTasks,openTasks,overdue,purgeOn,payroll,ndflYear,ndflRate,NDFL,workDaysIn,
+  allTasks,openTasks,overdue,purgeOn,payroll,payCo,nextNo(){ST.seq=(ST.seq||ST.emps.length)+1;save();return ST.seq+'/'+today().slice(0,4);},fillTpl,words,boss,reports,bossOptions,tree,LABOR,setPayCo,isHead,ndflYear,ndflRate,NDFL,workDaysIn,
   docsFor,docHtml,MROT,mrotNow,
   CONTRACT,REGIME,MILCAT,FIT,FIRE,soldierLimit,milLimit,
   d:{D,iso,today,addDays,addWork,nextWork,fmt:fmtD,diff:diffDays},

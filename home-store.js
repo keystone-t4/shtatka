@@ -36,7 +36,7 @@ const MENU=[
  {id:'home',title:'Главная',href:'cabinet.html',fixed:true},
  {id:'people',title:'Люди',href:'people.html'},
  {id:'tasks',title:'Заявки и задания',demoBadge:7},
- {id:'time',title:'Время'},
+ {id:'time',title:'График смен',href:'time.html'},
  {id:'docs',title:'Документы и сроки',href:'docs.html'},
  {id:'military',title:'Воинский учёт',href:'military.html'},
  {id:'foreign',title:'Иностранцы',href:'foreign.html'},

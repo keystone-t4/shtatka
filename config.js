@@ -3,6 +3,13 @@ window.SHTATKA_CONFIG = {
   // Адрес вашего сервера (API). Пусто — демо-режим: заявки сохраняются в браузере.
   // Сервер должен принимать POST {apiUrl}/register с JSON (компания, контакты, согласия).
   apiUrl: '',
+  // Адрес сервиса сведений о компаниях (server/company-proxy.mjs): ЕГРЮЛ, ЕГРИП и реестр МСП с сайтов ФНС.
+  // Пусто — берётся {apiUrl}/company; если и apiUrl пуст — DaData или демо.
+  companyUrl: '',
+  // Адрес распознавания паспорта (server/company-proxy.mjs → /passport). Пусто — рядом с companyUrl или {apiUrl}/passport; без них — демо.
+  passportUrl: '',
+  // Адрес проверки подписи (server/company-proxy.mjs → /auth). Пусто — рядом с companyUrl или {apiUrl}/auth.
+  authUrl: '',
   // Токен DaData (dadata.ru → профиль → API-ключ) для поиска компаний по ИНН в ЕГРЮЛ.
   // Пусто — показываются демо-реквизиты.
   dadataToken: '',
