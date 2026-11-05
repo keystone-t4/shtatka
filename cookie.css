@@ -1,0 +1,36 @@
+/* Cookie-баннер и окно настроек Штатки. Палитра «Тёмная ночь», без белого и градиентов. */
+.ck{position:fixed;left:0;right:0;bottom:0;z-index:60;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+.ck[hidden],.ckm[hidden]{display:none!important}
+.ck-card{pointer-events:auto;max-width:1040px;margin:0 auto;background:#F7EBDD;color:#1F2B45;border:2px solid #1F2B45;border-radius:22px;box-shadow:6px 6px 0 #1F2B45;padding:18px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;font:15px/1.45 'Onest',system-ui,sans-serif}
+.ck-card .ck-t{flex:1 1 380px;min-width:0}
+.ck-card b{display:block;font:600 16px 'Unbounded',system-ui,sans-serif;letter-spacing:-.02em;margin-bottom:4px}
+.ck-card p{margin:0}.ck-card a{color:#3F5E8F}
+.ck-btns{display:flex;gap:10px;flex-wrap:wrap}
+.ck-btns button,.ckm-foot button{font:600 15px 'Onest',system-ui,sans-serif;border-radius:999px;padding:12px 20px;cursor:pointer;border:2px solid #1F2B45;background:transparent;color:#1F2B45}
+.ck-btns .ck-all,.ckm-foot .ck-all{background:#1F2B45;color:#F5F1E8}
+.ck-btns .ck-set{background:#F2C38F}
+.ckm{position:fixed;inset:0;z-index:70;background:rgba(18,26,43,.6);display:flex;align-items:flex-end;justify-content:center}
+.ckm-box{background:#F5F1E8;color:#1F2B45;width:min(760px,100%);max-height:92vh;display:flex;flex-direction:column;border:2px solid #1F2B45;border-radius:26px 26px 0 0;font:15px/1.5 'Onest',system-ui,sans-serif}
+@media(min-width:800px){.ckm{align-items:center}.ckm-box{border-radius:26px;max-height:88vh}}
+.ckm-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 24px 8px}
+.ckm-top h2{font:600 22px/1.2 'Unbounded',system-ui,sans-serif;letter-spacing:-.02em;margin:0}
+.ckm-x{font:600 14px 'Onest',sans-serif;border:2px solid #1F2B45;background:transparent;color:#1F2B45;border-radius:999px;padding:8px 14px;cursor:pointer;flex:none}
+.ckm-body{overflow:auto;padding:4px 24px 12px}
+.ckm-lead{color:#4E5A72;margin:0 0 14px}
+.ckc{background:#F7EBDD;border:2px solid #1F2B45;border-radius:20px;padding:16px 18px;margin-bottom:12px}
+.ckc-h{display:flex;gap:14px;align-items:center;justify-content:space-between}
+.ckc-h b{font:600 17px 'Onest',sans-serif;display:block}.ckc-h span.d{color:#4E5A72;font-size:14px;display:block;margin-top:2px}
+.ckc details{margin-top:10px}.ckc summary{cursor:pointer;font-weight:600;color:#3F5E8F}
+.ckc table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:10px}
+.ckc th,.ckc td{border:1px solid #E3DACB;padding:7px 8px;text-align:left;vertical-align:top}.ckc th{background:#1F2B45;color:#F5F1E8;font-weight:600}
+.ckc .tw{overflow-x:auto}.ckc table{min-width:520px}
+.sw{position:relative;flex:none;width:54px;height:32px}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;width:100%;height:100%}
+.sw i{position:absolute;inset:0;border-radius:999px;background:#D6DCE6;border:2px solid #1F2B45;transition:background .15s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#1F2B45;transition:transform .15s}
+.sw input:checked+i{background:#F2C38F}.sw input:checked+i::after{transform:translateX(22px)}
+.sw input:disabled{cursor:not-allowed}.sw input:disabled+i{opacity:.55}
+.sw input:focus-visible+i{outline:3px solid #3F5E8F;outline-offset:3px}
+.ckm-foot{display:flex;gap:10px;flex-wrap:wrap;padding:14px 24px calc(18px + env(safe-area-inset-bottom,0px));border-top:2px solid #1F2B45}
+.ckm-foot button{flex:1 1 150px}
+.ckm-note{font-size:13px;color:#4E5A72;margin:4px 0 0}

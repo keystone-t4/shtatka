@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Больничные — Штатка</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F2B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts.css">
+<script src="config.js"></script>
+<link rel="stylesheet" href="cabinet.css">
+</head>
+<body data-page="sick">
+<template id="logoTpl"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg></template>
+<div class="app">
+ <aside class="side" id="side" aria-label="Меню"></aside>
+ <main>
+  <div class="top"><button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button></div>
+  <div class="ph"><div><h1 id="hT">Больничные</h1><p id="hS"></p></div><div class="acts" id="hA"></div></div>
+  <div id="hr"></div>
+  <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
+ </main>
+</div>
+<nav class="bottom" id="bottom" aria-label="Быстрое меню"></nav>
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="cabinet-widgets.js"></script>
+<script src="home-store.js"></script>
+<script src="hr-core.js"></script>
+<script src="shell.js"></script>
+<script src="hr.js"></script>
+</body>
+</html>

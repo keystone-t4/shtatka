@@ -9,9 +9,9 @@
     (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
     window.ym(Number(id),'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true});
   }
-  var v=null; try{v=localStorage.getItem('shtatka-cookie')}catch(e){}
-  if(v==='all')loadMetrika();
-  document.addEventListener('click',function(e){if(e.target&&e.target.id==='ckOk')setTimeout(loadMetrika,0);});
+  function consent(){var r=null;try{r=localStorage.getItem('shtatka-cookie')}catch(e){}if(!r)return false;if(r==='all')return true;try{return !!JSON.parse(r).analytics}catch(e){return false}}
+  if(consent())loadMetrika();
+  document.addEventListener('shtatka:cookies',function(e){if(e.detail&&e.detail.analytics)loadMetrika();});
   /* пока виден баннер cookie, оставляем под ним место, чтобы он не закрывал кнопки формы */
   function ckPad(){var c=document.getElementById('ck');var inner=c&&c.firstElementChild;document.body.style.paddingBottom=(c&&!c.hidden&&inner)?(inner.offsetHeight+28)+'px':'';}
   window.addEventListener('load',function(){ckPad();setTimeout(ckPad,400);});window.addEventListener('resize',ckPad);document.addEventListener('click',function(){setTimeout(ckPad,60);});

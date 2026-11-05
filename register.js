@@ -134,10 +134,4 @@ $('#loginLink').addEventListener('click',()=>{const s=get('shtatka-session',null
 
 if(location.hash==='#verify'&&get('shtatka-session',null))openDone(false);
 
-/* cookie */
-const ck=$('#ck');let cv=null;try{cv=localStorage.getItem('shtatka-cookie')}catch(e){}
-if(!cv)ck.hidden=false;
-const saveCk=x=>{try{localStorage.setItem('shtatka-cookie',x)}catch(e){}ck.hidden=true;};
-$('#ckOk').addEventListener('click',()=>saveCk('all'));$('#ckMin').addEventListener('click',()=>saveCk('necessary'));
-document.addEventListener('click',e=>{if(e.target.closest('[data-cookie-settings]')){e.preventDefault();ck.hidden=false;}});
 })();

@@ -13,10 +13,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Штатка">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="fonts.css">
 <script src="config.js"></script>
 <link rel="stylesheet" href="register.css">
+<link rel="stylesheet" href="cookie.css">
 </head>
 <body>
 <header class="hd"><a class="logo" href="index.html"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true" style="flex:none"><rect x="8" y="16" width="104" height="98" rx="26" fill="#1F2B45"/><rect x="32" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="76" y="4" width="12" height="24" rx="6" fill="#F2C38F"/><rect x="31" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="53" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="75" y="44" width="16" height="52" rx="3" fill="#F5F1E8"/><rect x="31" y="81" width="60" height="15" rx="3" fill="#F5F1E8"/></svg>Штатка</a><span class="hd-r">Уже зарегистрированы? <button type="button" class="lnk" id="loginLink">Войти</button></span></header>
@@ -160,14 +160,10 @@
 
 <footer class="ft"><span>© Штатка · ООО «Инново», Санкт-Петербург</span><span><a href="policy.html">Политика обработки данных</a> · <a href="offer.html">Договор-оферта</a> · <a href="#" data-cookie-settings>Настройки cookie</a></span></footer>
 
-<div class="ck" id="ck" hidden role="region" aria-label="Настройки cookie">
-  <div class="ck-card">
-    <p>Мы используем cookie: необходимые — чтобы сайт работал, аналитические — чтобы понимать, что улучшить. Аналитику включим, только если вы разрешите. Подробнее — в <a href="cookie.html">согласии на cookie</a> и <a href="policy.html">Политике обработки данных</a>.</p>
-    <div class="ck-btns"><button class="ck-min" type="button" id="ckMin">Только необходимые</button><button class="ck-ok" type="button" id="ckOk">Принять</button></div>
-  </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
 <script src="register.js"></script>
 <script src="app.js"></script>
+<script src="cookie.js"></script>
 </body>
 </html>
