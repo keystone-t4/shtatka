@@ -19,17 +19,22 @@ const PP=window.SHTATKA_PASSPORT;
 
 function say(h){V.innerHTML=h;window.scrollTo(0,0);}
 function welcome(err){
-  say(`<section class="card"><h1>Вход для сотрудника</h1><p class="lead">Работодатель присылает ссылку и отдельно код доступа. Откройте ссылку из сообщения и введите код. Здесь вы увидите свои документы, график смен и остаток отпуска.</p>
-  <label class="fld">Если ссылка не открылась, вставьте её сюда<input id="lk" inputmode="url" autocomplete="off" placeholder="https://…/me.html#m=…"></label>${err?`<p class="err">${esc(err)}</p>`:''}<button type="button" class="btn" id="go">Продолжить</button>
+  say(`<a class="back" href="register.html">← Назад</a><section class="card"><h1>Вход для сотрудника</h1><p class="lead">Работодатель присылает ссылку и отдельно код доступа из 8 букв и цифр. Вставьте их сюда. Если ссылка открылась сама, останется ввести только код.</p>
+  <label class="fld">Ссылка из сообщения<input id="lk" inputmode="url" autocomplete="off" placeholder="https://…/me.html#m=…"></label>
+  <label class="fld">Код доступа<input id="cd0" class="code" maxlength="9" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX"></label>${err?`<p class="err" role="alert">${esc(err)}</p>`:''}<button type="button" class="btn" id="go">Войти</button>
   <p class="muted">Вы руководитель или владелец компании? <a href="register.html">Регистрация компании</a></p></section>`);
-  $('#go').onclick=()=>{const m=/#m=([\w-]+)/.exec($('#lk').value);if(!m)return welcome('В ссылке нет данных. Скопируйте её из сообщения целиком.');pending=m[1];ask();};
+  const c0=$('#cd0');c0.addEventListener('input',()=>{let v=M.normCode(c0.value).slice(0,8);c0.value=v.length>4?v.slice(0,4)+'-'+v.slice(4):v;});
+  $('#go').onclick=()=>{const m=/#m=([\w-]+)/.exec($('#lk').value);if(!m)return welcome('В ссылке нет данных. Скопируйте её из сообщения целиком.');pending=m[1];const c=M.normCode(c0.value);ask(null,c.length===8?c:'');};
+  [$('#lk'),c0].forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click();}));
 }
-function ask(err){
-  say(`<section class="card"><h1>Введите код доступа</h1><p class="lead">Код из отдельного сообщения от работодателя: 8 букв и цифр.</p>
+function ask(err,preset){
+  say(`<a class="back" href="register.html" id="bk0">← Назад</a><section class="card"><h1>Введите код доступа</h1><p class="lead">Код из отдельного сообщения от работодателя: 8 букв и цифр.</p>
   <label class="fld">Код<input id="cd" class="code" maxlength="9" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX"></label>${err?`<p class="err" role="alert">${esc(err)}</p>`:''}
   <button type="button" class="btn" id="ok">Войти</button><button type="button" class="btn ghost" id="bk">Назад</button></section>`);
   const i=$('#cd');i.addEventListener('input',()=>{let v=M.normCode(i.value).slice(0,8);i.value=v.length>4?v.slice(0,4)+'-'+v.slice(4):v;});i.focus();
   $('#bk').onclick=()=>{pending=null;stored()||welcome();};
+  $('#bk0').onclick=e=>{e.preventDefault();pending=null;if(!stored())welcome();};
+  if(preset){i.value=preset.slice(0,4)+'-'+preset.slice(4);setTimeout(()=>$('#ok').click(),0);}
   $('#ok').onclick=async()=>{const c=M.normCode(i.value);if(c.length<8)return ask('Код состоит из 8 символов. Проверьте сообщение.');
     $('#ok').disabled=true;$('#ok').textContent='Проверяем…';
     try{const p=await M.open(pending,c);if(p.expAt?Date.now()>p.expAt:(p.exp&&today()>p.exp))return ask('Приглашение действует 7 дней и уже истекло. Попросите работодателя прислать новое.');

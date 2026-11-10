@@ -23,6 +23,7 @@ function nightMin(t){let n=0,a=mins(t.from),L=tlen(t);for(let i=0;i<L;i++){const
 /* официальные праздники с фиксированной датой (ст. 112 ТК) */
 const HOL=['01-01','01-02','01-03','01-04','01-05','01-06','01-07','01-08','02-23','03-08','05-01','05-09','06-12','11-04'];
 const isHol=ds=>HOL.includes(ds.slice(5));
+const CAL=window.SHTATKA_CAL;
 const monday=ds=>{const x=d.D(ds),w=(x.getDay()+6)%7;return d.addDays(ds,-w);};
 const week=ds=>{const m=monday(ds);return [0,1,2,3,4,5,6].map(i=>d.addDays(m,i));};
 const key=(e,ds)=>(e.id||e)+'|'+ds;
@@ -61,7 +62,7 @@ function month(e,y,m){
   const last=new Date(y,m+1,0).getDate();let sh=0,min=0,nt=0,hol=0,hmin=0;
   for(let i=1;i<=last;i++){const ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(i).padStart(2,'0');const t=typeOf(cell(e,ds));if(!t)continue;
     sh++;min+=tlen(t);nt+=nightMin(t);if(isHol(ds)){hol++;hmin+=tlen(t);}}
-  return {shifts:sh,hours:min/60,night:nt/60,hol,holHours:hmin/60,norm:R.workDaysIn(y,m)*8};
+  return {shifts:sh,hours:min/60,night:nt/60,hol,holHours:hmin/60,norm:CAL?CAL.month(y,m).hours:R.workDaysIn(y,m)*8};
 }
 /* кто и когда сегодня */
 function today(){

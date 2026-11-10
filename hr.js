@@ -1,5 +1,5 @@
 /* Разделы, которые считаются из карточек сотрудников: Документы и сроки, Воинский учёт, Иностранцы, Больничные,
-   Зарплата, Архив, Законы и МРОТ. Сами данные не вносятся здесь: они приходят из раздела «Люди» (hr-core.js). */
+   Зарплата, Архив, Законы и МРОТ. Сами данные не вносятся здесь: они приходят из раздела «Сотрудники» (hr-core.js). */
 (function(){
 const H=window.SHTATKA_HOME,UI=window.SHTATKA_UI,R=window.SHTATKA_HR,esc=UI.esc,toast=UI.toast;
 const $=s=>document.querySelector(s);
@@ -44,14 +44,8 @@ military(){
   <section class="blk"><div class="bh"><h2>Не подлежат · ${no.length}</h2></div>${no.length?tbl(['Сотрудник','Возраст','Статус','Основание','Срок'],no.map(row)):'<p class="muted">—</p>'}</section>`);
 },
 foreign(){
-  const all=R.active().filter(e=>R.foreign(e));
-  set('Иностранцы','Работники без гражданства РФ: документы на работу, сроки и уведомления в МВД.',exp('for'));
-  if(!R.active().length)return out(empty('Раздел заполнится сам, как только вы примете иностранного сотрудника.'));
-  if(!all.length)return out('<div class="emptyx"><p>Иностранных сотрудников нет. Если примете, отметьте гражданство в карточке: он появится здесь, а уведомление МВД и срок патента попадут в сроки.</p></div>');
-  const row=e=>{const f=R.foreign(e),t=e.tasks.find(x=>x.mod==='foreign'&&!x.done&&x.key.startsWith('mvd'));
-    return `<tr><td>${nameCell(e)}</td><td>${esc(e.country||'')}<small class="sub2">${esc(R.REGIME[e.regime].split(' (')[0])}</small></td><td>${esc(e.permitNo||'—')}</td><td>${e.permitUntil?d.fmt(e.permitUntil):'—'}</td><td><span class="pill ${f.lvl==='ok'?'ok':f.lvl}">${esc(f.msg)}</span></td><td>${t?`<span class="pill ${t.due<d.today()?'crit':'warn'}">МВД до ${d.fmt(t.due)}</span>`:'<span class="pill ok">подано</span>'}</td></tr>`;};
-  out(`<section class="blk">${tbl(['Сотрудник','Страна','Документ','Действует до','Состояние','Уведомление'],all.map(row))}</section>
-  <section class="blk"><div class="bh"><h2>Что важно</h2></div><ul class="rules"><li>Уведомление в МВД о приёме и о прекращении договора: 3 рабочих дня. Штраф юрлицу до 1 млн ₽ и приостановка деятельности до 90 дней (ст. 18.15 КоАП).</li><li>Граждане ЕАЭС работают без патента, но уведомление подаётся.</li><li>С 01.09.2026 в уведомлении указывается срок действия договора и прикладывается согласие иностранца на обработку данных.</li><li>За месяц до окончания патента или разрешения предупредим здесь.</li></ul><p class="muted">Сверено с открытыми источниками 02.11.2026; перед запуском проверить юристом.</p></section>`);
+  set('Иностранцы','Раздел в работе.');
+  out('<div class="emptyx"><p><b>Иностранцы: в работе.</b></p><p>Проверку документов на право работы, сроки и уведомления мы подключим отдельным шагом: тема сложная, делаем её аккуратно. Пока иностранного сотрудника можно принять в разделе «Сотрудники»: выберите «Иностранный паспорт» и укажите страну. Договор и личное дело оформятся как обычно.</p></div>');
 },
 sick(){
   const all=R.active();
@@ -121,12 +115,11 @@ archive(){
 laws(){
   const all=R.active(),M=R.MROT;
   set('Законы и МРОТ','Что в законе касается именно вашей команды. Сверено с открытыми источниками 02.11.2026.');
-  const men=all.some(e=>R.mil(e).st!=='no'),fr=all.some(e=>R.foreign(e)),low=all.filter(e=>e.salary&&e.salary<R.mrotNow()),y=all.some(e=>R.age(e.birth)!=null&&R.age(e.birth)<18);
+  const men=all.some(e=>R.mil(e).st!=='no'),low=all.filter(e=>e.salary&&e.salary<R.mrotNow()),y=all.some(e=>R.age(e.birth)!=null&&R.age(e.birth)<18);
   const cards=[
    ['ЕФС-1: приём и увольнение','Сведения о приёме и об увольнении подаются не позднее следующего рабочего дня после приказа. Переводы и другие события подаются позже, до 25 числа следующего месяца. Работнику при увольнении выдают сведения о трудовой деятельности (СТД-Р) или трудовую книжку.','ст. 66.1, 84.1 ТК; проверить срок для переводов',true],
    ['Зарплата и расчёт при увольнении','Зарплата выплачивается не реже чем каждые полмесяца. Расчёт и компенсация за неиспользованный отпуск выплачиваются в последний рабочий день.','ст. 136, 140, 127 ТК',true],
    ['Воинский учёт в организации','Мужчины-граждане от 18 лет до предельного возраста, женщины с ВУС. Сообщать о приёме и увольнении в течение 5 рабочих дней.','ФЗ № 53-ФЗ; постановление № 719',men],
-   ['Иностранные работники','Уведомление МВД в течение 3 рабочих дней. С 01.09.2026 указывается срок договора и прикладывается согласие иностранца на обработку данных.','115-ФЗ, ст. 18.15 КоАП',fr],
    ['Работники младше 18 лет','Обязательный медосмотр, сокращённая рабочая неделя, испытательный срок запрещён.','ст. 69, 70, 92, 266 ТК',y],
    ['Согласие на персональные данные','Согласие оформляется отдельным документом с 01.09.2025. Хранить данные уволенных можно только в пределах срока и цели.','ст. 9 и 5 152-ФЗ',true],
    ['Хранение документов','Личные дела и приказы по личному составу хранятся до 50 лет по Перечню Росархива. Срок отсчитывается с 1 января года после увольнения.','приказ Росархива № 236',true]];
@@ -166,8 +159,7 @@ document.addEventListener('change',ev=>{
 document.addEventListener('click',ev=>{
   const t=ev.target.closest('button');if(!t)return;
   if(t.dataset.exp==='mil'){csv('voinskiy-uchet.csv',['ФИО','Дата рождения','Возраст','Должность','Статус','Основание','Военный билет','Звание','ВУС','Категория запаса','Годность'],R.active().map(e=>{const m=R.mil(e);return [e.fio,e.birth,R.age(e.birth),e.position,{in:'на учёте',check:'уточнить',out:'снять',no:'не ставится'}[m.st],m.why,e.milDoc||'',e.rank||'',e.vus||'',R.MILCAT[e.milCat]||'',R.FIT[e.fit]||''];}));return;}
-  if(t.dataset.exp==='for'){csv('inostrancy.csv',['ФИО','Страна','Режим','Документ','Действует до','Начало работы','Состояние'],R.active().filter(e=>R.foreign(e)).map(e=>[e.fio,e.country,R.REGIME[e.regime],e.permitNo||'',e.permitUntil||'',e.start,R.foreign(e).msg]));return;}
-  if(t.dataset.exp==='pay'){const n=new Date();csv('zarplata-'+n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'.csv',['ФИО','Должность','Оклад','Норма дней','Отработано','Больничных дней','Начислено','НДФЛ','К выплате','База взносов','Взносы основные','Доп. тариф ОПС','Взносы всего','Травматизм','Расходы компании'],R.payroll(n.getFullYear(),n.getMonth()).map(r=>[r.e.fio,r.e.position,r.e.salary,r.norm,r.worked,r.sick,r.gross,r.ndfl,r.pay,r.base,r.main,r.extra,r.contrib,r.injury,r.cost]));return;}
+    if(t.dataset.exp==='pay'){const n=new Date();csv('zarplata-'+n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'.csv',['ФИО','Должность','Оклад','Норма дней','Отработано','Больничных дней','Начислено','НДФЛ','К выплате','База взносов','Взносы основные','Доп. тариф ОПС','Взносы всего','Травматизм','Расходы компании'],R.payroll(n.getFullYear(),n.getMonth()).map(r=>[r.e.fio,r.e.position,r.e.salary,r.norm,r.worked,r.sick,r.gross,r.ndfl,r.pay,r.base,r.main,r.extra,r.contrib,r.injury,r.cost]));return;}
   if(t.dataset.restore){R.restore(t.dataset.restore);P.archive();toast('Сотрудник возвращён в штат.');}
   if(t.dataset.purge){if(t.dataset.arm){R.purge(t.dataset.purge);P.archive();toast('Данные сотрудника удалены.');}else{t.dataset.arm='1';t.textContent='Точно удалить?';setTimeout(()=>{if(t.isConnected){delete t.dataset.arm;t.textContent='Удалить';}},3000);}}
 });

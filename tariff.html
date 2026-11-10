@@ -22,7 +22,7 @@
   <div class="ph"><div><h1>Тариф и оплата</h1><p id="tSub">Цена зависит от числа сотрудников.</p></div></div>
   <div class="form-card" style="margin-bottom:18px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:14px">
    <label class="fld" style="flex:0 0 180px">Сотрудников<input id="tN" type="number" min="1" value="1"></label>
-   <p style="margin:0;color:var(--muted);font-size:14px;flex:1 1 260px" id="tHint">Сейчас в разделе «Люди» никого нет, поэтому считаем на 1 человека.</p>
+   <p style="margin:0;color:var(--muted);font-size:14px;flex:1 1 260px" id="tHint">Сейчас в разделе «Сотрудники» никого нет, поэтому считаем на 1 человека.</p>
   </div>
   <section class="plans">
    <div class="plan" id="pMonth"><b>Помесячно</b><div class="big" id="tM">100 ₽</div><small id="tM2">в месяц · 100 ₽ за сотрудника</small><button type="button" class="b d" data-plan="month">Выбрать</button></div>
@@ -31,7 +31,7 @@
   <div class="form-card" style="margin-top:18px">
    <h2 id="tStatus">Тариф не выбран</h2>
    <p class="hint2" style="margin:0">Оплата по счёту на компанию. Оплата с расчётного счёта компании заодно подтвердит компанию.</p>
-   <div><button type="button" class="b d" id="tInvoice" data-soon="Счёт будет формироваться здесь, когда подключим сервер и банковские реквизиты" disabled>Получить счёт</button></div>
+   <div><button type="button" class="b d" id="tInvoice" data-soon="Счёт будет формироваться здесь, когда подключим сервер и банковские реквизиты">Получить счёт</button></div>
   </div>
 
   <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
@@ -42,6 +42,7 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="cabinet-widgets.js"></script>
 <script src="home-store.js"></script>
+<script src="calendar-data.js"></script>
 <script src="hr-core.js"></script>
 <script src="jobs.js"></script>
 <script src="shell.js"></script>

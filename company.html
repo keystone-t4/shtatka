@@ -20,23 +20,25 @@
  <aside class="side" id="side" aria-label="Меню"></aside>
  <main>
   <div class="top"><button type="button" class="ibtn menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button></div>
-  <div class="ph"><div><h1>Компания</h1><p>Реквизиты, анкета компании и структура.</p></div></div>
+  <div class="ph"><div><h1>О компании</h1><p>Реквизиты, анкета компании и структура.</p></div></div>
   <section class="cards3" style="margin-bottom:18px">
    <div class="card"><h2 id="cName">Ваша компания</h2><p id="cMeta">ИНН из регистрации</p><span class="tag2" id="cStatus">Подтверждена</span><a class="b" id="cVerify" href="register.html#verify" hidden>Подтвердить компанию</a></div>
    <div class="card"><h2>Структура</h2><p id="cUnits">Точки, проекты, города или отделы не заданы.</p><a class="b" href="customize.html#structure">Настроить структуру</a></div>
    <div class="card"><h2>Тариф</h2><p id="cTariff">Тариф не выбран.</p><a class="b" href="tariff.html">Открыть тарифы</a></div>
   </section>
-  <section class="form-card" id="cdocs"></section>
   <form class="form-card" id="fCo" novalidate>
-   <h2>Анкета компании</h2><p class="hint2">Эти данные попадут в договоры и приказы. Около 10 минут.</p>
+   <h2>Анкета компании</h2><p class="hint2">Эти данные попадут в договоры и приказы. Заполните один раз.</p>
    <div class="fld2"><label class="fld">Руководитель, ФИО<input id="qHead" placeholder="Иванов Иван Иванович"></label><label class="fld">Должность руководителя<input id="qPost" placeholder="Генеральный директор"></label></div>
    <div class="fld2"><label class="fld">Режим работы<select id="qMode"><option value="5/2">Пятидневка, 5/2</option><option value="shift">Сменный график</option><option value="2/2">График 2/2</option><option value="flex">Гибкий график</option></select></label>
    <label class="fld">Рабочий день<input id="qHours" placeholder="09:00–18:00"></label></div>
    <div class="fld2"><label class="fld">Дни выплаты зарплаты<input id="qPay" placeholder="Например, 10 и 25"></label><label class="fld">Ежегодный отпуск, дней<input id="qVac" type="number" min="28" max="60" value="28"></label></div>
+   <div class="fld2"><label class="fld">Адрес организации (юридический)<input id="qAddr" placeholder="индекс, город, улица, дом, офис"></label><label class="fld">Кому сообщать об изменении данных<input id="qHr" placeholder="в отдел кадров"></label></div>
+   <div class="fld2"><label class="fld">Телефон организации<input id="qPhone" type="tel" placeholder="+7 812 000-00-00"></label><label class="fld">Почта организации<input id="qEmail" type="email" placeholder="hr@company.ru"></label></div>
    <div class="fld2"><label class="fld">Испытательный срок по умолчанию<select id="qProb"><option value="0">Без испытательного срока</option><option value="1">1 месяц</option><option value="2">2 месяца</option><option value="3" selected>3 месяца</option></select></label><div></div></div>
    <p class="err" id="qErr" hidden></p>
    <div><button type="submit" class="b d">Сохранить анкету</button></div>
   </form>
+  <section class="form-card" id="cdocs"></section>
 
   <div class="foot"><span>Штатка · ООО «Инново»</span><a href="policy.html">Политика обработки данных</a><a href="offer.html">Оферта</a></div>
  </main>
@@ -46,11 +48,13 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="cabinet-widgets.js"></script>
 <script src="home-store.js"></script>
+<script src="calendar-data.js"></script>
 <script src="hr-core.js"></script>
 <script src="jobs.js"></script>
 <script src="shell.js"></script>
 <script src="dossier.js"></script>
 <script src="ustav-reader.js"></script>
+<script src="contract-template.js"></script>
 <script src="company-docs.js"></script>
 <script src="company.js"></script>
 </body>

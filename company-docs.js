@@ -65,6 +65,15 @@ const TPL={
   <h4>5. Режим работы и время отдыха</h4><p>5.1. В организации установлена ${M}${c.hours?'. Рабочий день: '+esc(c.hours):''}.</p><p>5.2. Перерыв для отдыха и питания предоставляется продолжительностью не менее 30 минут и не более двух часов, в рабочее время не включается.</p><p>5.3. Ежегодный основной оплачиваемый отпуск предоставляется продолжительностью ${c.vac} календарных ${PL(c.vac,'день','дня','дней')} в соответствии с графиком отпусков.</p>
   <h4>6. Поощрения и взыскания</h4><p>За добросовестный труд применяются поощрения: благодарность, премия. За нарушение трудовой дисциплины применяются замечание, выговор, увольнение по соответствующим основаниям. До применения взыскания работодатель требует от работника письменное объяснение.</p>
   <h4>7. Заключительные положения</h4><p>Правила вступают в силу с даты утверждения и действуют до принятия новых.</p>${signBlock(c)}`;}},
+ kt:{t:'Положение о коммерческой тайне',make:c=>`${head(c)}<h3 style="text-align:center">ПОЛОЖЕНИЕ О КОММЕРЧЕСКОЙ ТАЙНЕ</h3><p style="text-align:center">Утверждено приказом № ${blank} от ${TODAY()}</p>
+  <h4>1. Общие положения</h4><p>1.1. Положение вводит в организации режим коммерческой тайны в соответствии с Федеральным законом от 29.07.2004 № 98-ФЗ «О коммерческой тайне».</p><p>1.2. Положение обязательно для всех работников, которым доверена коммерческая тайна.</p>
+  <h4>2. Перечень сведений, составляющих коммерческую тайну</h4><p>2.1. Исходный код, архитектура и техническая документация продуктов.</p><p>2.2. Клиентская база, условия договоров, цены и скидки.</p><p>2.3. Финансовые показатели, не подлежащие раскрытию, планы развития.</p><p>2.4. Иные сведения: ${blank}.</p><p>2.5. Сведения, которые по ст. 5 98-ФЗ коммерческой тайной быть не могут (учредительные документы, сведения о численности и оплате труда, о нарушениях закона и др.), в перечень не входят.</p>
+  <h4>3. Порядок доступа и учёта</h4><p>3.1. Доступ получают только работники из утверждённого списка. Список ведёт: ${blank}.</p><p>3.2. Работник знакомится с Положением и перечнем под подпись и подписывает соглашение о неразглашении при приёме на работу.</p><p>3.3. На документах и носителях ставится гриф «Коммерческая тайна» с указанием организации.</p>
+  <h4>4. Меры охраны</h4><p>4.1. Личные пароли, двухфакторная защита, запрет пересылки на личную почту и в личные облака.</p><p>4.2. При увольнении работник возвращает носители, права доступа закрываются в день увольнения.</p>
+  <h4>5. Ответственность</h4><p>Нарушение влечёт дисциплинарную, материальную, гражданско-правовую и иную ответственность по закону (ст. 14 98-ФЗ, ст. 81 и 243 ТК РФ).</p>${signBlock(c)}`},
+ nda:{t:'Соглашение о неразглашении коммерческой тайны (форма)',make:c=>{const T=window.SHTATKA_TPL&&window.SHTATKA_TPL.nda;
+  const f=T?T.replace(/\{\{org\}\}/g,esc(c.name)).replace(/\{\{orgInn\}\}/g,esc(c.inn)).replace(/\{\{orgHeadPost\}\}/g,esc((c.post||'').toLowerCase())).replace(/\{\{orgHead\}\}/g,esc(c.head||blank)).replace(/\{\{date\}\}/g,TODAY()).replace(/\{\{number\}\}/g,blank).replace(/\{\{city\}\}/g,'').replace(/\{\{(\w+)\}\}/g,blank):'';
+  return f||'<p>Шаблон недоступен.</p>';}},
  vac:{t:'График отпусков',make:c=>{const R_=window.SHTATKA_HR,now=new Date(),y=now.getMonth()>=8?now.getFullYear()+1:now.getFullYear(),L=R_?R_.active():[];
   return `${head(c)}<p style="text-align:right">Утверждён приказом № ${blank} от ${TODAY()}</p><h3 style="text-align:center">ГРАФИК ОТПУСКОВ на ${y} год</h3>
   <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:13px"><tr><th>№</th><th>Должность</th><th>ФИО</th><th>Дней</th><th>Дата начала</th><th>Дата окончания</th><th>Ознакомлен(а)</th></tr>
@@ -90,25 +99,30 @@ function ctx(){
   const ses=H.session()||{},co=ses.co||{},emps=R?R.active():[];
   return {ip:!!co.ip||String(ses.inn||'').length===12,n:emps.length,ind:J?J.industry().id:'',remote:emps.some(e=>e.remote||e.workMode==='remote')};
 }
-let c0=null;
+let moreOpen=false;document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('cd-more'))moreOpen=e.target.open;},true);
+let curTab='';try{curTab=sessionStorage.getItem('shtatka-cd-tab')||'';}catch(e){}
 function view(){
   if(!$('#cdocs'))return;
-  const st=get(),c=ctx();c0=c;
+  const st=get(),c=ctx();
   const rows=CAT.map(x=>{const w=x.when(c);return Object.assign({},x,{w,s:st[x.id]||{}});}).filter(x=>x.w!=='skip');
   const done=r=>r.s.files&&r.s.files.length,na=r=>r.s.st==='na',
     need=rows.filter(r=>r.w==='y'),have=need.filter(r=>done(r)||na(r)).length;
   const head=`<div class="cd-prog"><div><b>${have} из ${need.length}</b><small>обязательных документов в порядке</small></div><div class="cd-bar"><i style="width:${need.length?Math.round(have/need.length*100):0}%"></i></div></div>
    <p class="hint2">${c.ip?'Вы ИП: устава нет, вместо него загрузите выписку из ЕГРИП.':'Загрузите устав: по нему мы будем проверять, что документы ему не противоречат.'} Отметьте «нет», если документа нет, и мы поможем его создать. Копии хранятся в вашем браузере.</p>`;
-  const body=GRP.map(([g,gt])=>{const L=rows.filter(r=>r.g===g);if(!L.length)return '';
-    return `<h3 class="cd-g">${gt}</h3>`+L.map(r=>{
+  const tabs=GRP.filter(([g])=>rows.some(r=>r.g===g));if(!tabs.some(t=>t[0]===curTab))curTab=tabs[0]?tabs[0][0]:'';
+  const tabBar=`<div class="cd-tabs" role="tablist">${tabs.map(([g,gt])=>{const L=rows.filter(r=>r.g===g),nd=L.filter(r=>r.w==='y'&&!done(r)&&!na(r)).length;return `<button type="button" role="tab" class="cd-tab" data-cdtab="${g}" aria-selected="${g===curTab}">${gt}${nd?`<i>${nd}</i>`:''}</button>`;}).join('')}</div>`;
+  const body=tabBar+GRP.filter(([g])=>g===curTab).map(([g,gt])=>{const L=rows.filter(r=>r.g===g);if(!L.length)return '';
+    const art=r=>{
       const hv=done(r),n=na(r),no=r.s.st==='no';
-      const badge=hv?'<span class="pill ok">загружен</span>':n?'<span class="pill">не нужен</span>':no?'<span class="pill warn">нет: надо создать</span>':r.w==='y'?'<span class="pill crit">нужен</span>':r.w==='ask'?'<span class="pill info">зависит от вас</span>':'<span class="pill">желательно</span>';
+      const badge=hv?'<span class="pill ok">загружен</span>':n?'<span class="pill">не нужен</span>':no?'<span class="pill warn">нет: надо создать</span>':r.w==='y'?'<span class="pill warn">обязателен</span>':r.w==='ask'?'<span class="pill info">зависит от вас</span>':'<span class="pill">желательно</span>';
       const files=(r.s.files||[]).map((f,i)=>`<div class="cd-f"><a href="#" data-dl="${r.id}:${i}">${esc(f.name)}</a><small>${fmtS(f.size)} · ${fmtD(f.at)}</small><button type="button" class="x" data-rm="${r.id}:${i}" aria-label="Удалить файл">×</button></div>`).join('');
       const ask=r.w==='ask'&&!hv&&!n&&!no?`<p class="cd-q"><b>${esc(r.q||'Нужен ли он вам?')}</b> <button type="button" class="b" data-st="${r.id}:no">Да, документа нет</button> <button type="button" class="b" data-st="${r.id}:na">Нет, не нужно</button></p>`:'';
       return `<article class="cd" id="cd-${r.id}"><div class="cd-h"><b>${esc(r.t)}</b>${badge}</div><p class="cd-w">${esc(r.why)}${r.law?` <small>${esc(r.law)}</small>`:''}</p>${files}${r.id==='ustav'?ustavBox(r.s):''}${ask}
        <div class="cd-b"><label class="b ${hv?'':'d'}">${hv?'Добавить файл':'Загрузить'}<input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.odt" data-up="${r.id}" hidden multiple></label>
-       ${TPL[r.id]?`<button type="button" class="b" data-make="${r.id}">Создать с нуля</button>`:'<button type="button" class="b" disabled title="Шаблон подключим позже">Создать с нуля</button>'}
-       ${hv||n?'':`<button type="button" class="b" data-st="${r.id}:no">Нет такого</button><button type="button" class="b" data-st="${r.id}:na">Не нужен</button>`}${n||no?`<button type="button" class="b" data-st="${r.id}:">Сбросить</button>`:''}</div></article>`;}).join('');}).join('');
+       ${TPL[r.id]?`<button type="button" class="b" data-make="${r.id}">Создать с нуля</button>`:'<button type="button" class="b" data-soon="Шаблон этого документа подключим на следующих шагах">Создать с нуля</button>'}
+       ${hv||n?'':`<button type="button" class="b" data-st="${r.id}:no">Нет такого</button><button type="button" class="b" data-st="${r.id}:na">Не нужен</button>`}${n||no?`<button type="button" class="b" data-st="${r.id}:">Сбросить</button>`:''}</div></article>`;};
+    const pri=r=>(r.w==='y'&&!done(r)&&!na(r)?0:1);const S=L.map((r,i)=>[r,i]).sort((x,y)=>pri(x[0])-pri(y[0])||x[1]-y[1]).map(x=>x[0]);const top=S.slice(0,3),rest=S.slice(3);
+    return top.map(art).join('')+(rest.length?`<details class="cd-more"${moreOpen?' open':''}><summary>Ещё ${rest.length} ${PL(rest.length,'документ','документа','документов')}</summary>${rest.map(art).join('')}</details>`:'');}).join('');
   $('#cdocs').innerHTML=`<h2>Документы компании</h2>`+head+body;
 }
 document.addEventListener('change',async e=>{const i=e.target.closest('[data-up]');if(!i)return;const id=i.dataset.up,fl=[...i.files];i.value='';if(!fl.length)return;
@@ -121,6 +135,7 @@ document.addEventListener('change',async e=>{const i=e.target.closest('[data-up]
     else if(r.reason==='scan'){s2.scan=true;s2.info=null;s2.warn=[];}
     st2.ustav=s2;put(st2);view();toast(r.ok?'Устав прочитан: найдено '+r.found+' из 5 основных пунктов.':r.reason==='scan'?'Это скан: текст не распознан.':'Не удалось прочитать файл.');}});
 document.addEventListener('click',async e=>{
+  const tb=e.target.closest('[data-cdtab]');if(tb){curTab=tb.dataset.cdtab;try{sessionStorage.setItem('shtatka-cd-tab',curTab);}catch(x){}view();return;}
   const mk=e.target.closest('[data-make]');
   if(mk){const id=mk.dataset.make,T=TPL[id];if(!T)return;
     if(T.pick){const L=(R?R.active():[]);const opts=L.map(x=>`<option value="${x.id}">${esc(x.fio)}${x.position?' — '+esc(x.position):''}</option>`).join('');

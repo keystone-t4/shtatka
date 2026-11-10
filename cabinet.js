@@ -41,7 +41,7 @@ function closeScope(){$('#scopeMenu').hidden=true;$('#scopeBtn').setAttribute('a
 const emps=()=>H.employees();
 const EMPTY={
  decisions:'Заявок на согласование пока нет.',drivers:'Отметьте водителей в карточках сотрудников: здесь появятся права и медосмотры.',
- migration:'Иностранных сотрудников нет. Если появятся, напомним про уведомления и патенты.',leave:'График отпусков составим по датам приёма.',
+leave:'График отпусков составим по датам приёма.',
  safety:'Кому нужны инструктажи, подскажем по должностям.',med:'Кому нужны медосмотры и медкнижки, определим по должностям.',
  calendar:'Отпуска и выходные появятся здесь после графика.',finance:'Расходы на людей посчитаем, когда появятся оклады.',
  knowledge:'Здесь будут новые требования закона и короткие разборы.',benefits:'Льготы для сотрудников настраиваются в разделе «Льготы».',
@@ -137,7 +137,7 @@ const ART={
 };
 const PATHS={
  none:{t:'Сотрудников пока нет',s:'Буду нанимать',head:'Добавьте первого сотрудника',text:'Внесите ФИО и должность, остальное человек заполнит сам по ссылке с телефона. Договор, приказ и согласия подготовим.',btn:'Добавить сотрудника',href:'people.html#add'},
- solo:{t:'Пока работаю один',s:'Сотрудников нет, директор — я',head:'Начните с анкеты компании',text:'Режим работы, дни зарплаты, отпуск. Когда понадобится первый сотрудник, добавите его в разделе «Люди» за пару минут.',btn:'Заполнить анкету',href:'company.html'},
+ solo:{t:'Пока работаю один',s:'Сотрудников нет, директор — я',head:'Начните с анкеты компании',text:'Режим работы, дни зарплаты, отпуск. Когда понадобится первый сотрудник, добавите его в разделе «Сотрудники» за пару минут.',btn:'Заполнить анкету',href:'company.html'},
  have:{t:'Сотрудники уже есть',s:'Нужно навести порядок',head:'Загрузите договоры сотрудников',text:'Фото или скан трудовых договоров. Достанем ФИО, должность и даты и покажем, каких документов не хватает.',btn:'Загрузить договоры',href:'people.html#upload'}
 };
 let slide=0;
@@ -150,7 +150,7 @@ function tour(open){
   let body='';
   if(slide===0)body=`<div class="art">${ART.hello}</div><h2>Добро пожаловать${first?', '+esc(first):''}</h2><p>Штатка ведёт кадры за вас: договоры, приказы, согласия, отпуска и сроки. Покажем, с чего начать: это займёт минуту.</p>`;
   if(slide===1)body=`<div class="art">${ART.choose}</div><h2>Что у вас сейчас?</h2><div class="opts">${Object.entries(PATHS).map(([k,v])=>`<button type="button" class="opt" data-path="${k}" aria-pressed="${S.onboard.path===k}"><b>${v.t}</b><small>${v.s}</small></button>`).join('')}</div>`;
-  if(slide===2)body=`<div class="art">${ART.doc}</div><h2>${esc(p.head)}</h2><p>${esc(p.text)}</p>${H.verified()?'':'<p class="small">Перед этим подтвердите компанию: подписью руководителя или оплатой счёта.</p>'}`;
+  if(slide===2)body=`<div class="art">${ART.doc}</div><h2>${esc(p.head)}</h2><p>${esc(p.text)}</p>${H.verified()?'':'<p class="small">Перед этим подтвердите компанию: подписью руководителя, через банк для бизнеса или договором на бумаге.</p>'}`;
   const next=slide===2?`<a class="b d" href="${H.verified()||p.href==='company.html'?p.href:'register.html#verify'}" id="tourGo">${H.verified()||p.href==='company.html'?esc(p.btn):'Подтвердить компанию'}</a>`:`<button type="button" class="b d" id="tourNext"${slide===1&&!S.onboard.path?' disabled':''}>Далее</button>`;
   d.innerHTML=`<div class="tour-b">${body}</div><div class="tour-f">${dots}<div><button type="button" class="b" id="tourClose">${slide===2?'Позже':'Закрыть'}</button>${next}</div></div>`;
   if(open&&!d.open){if(d.showModal)d.showModal();else d.setAttribute('open','');}

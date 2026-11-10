@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Штатка — кадры в порядке</title>
+<title>Штатка: кадры в порядке</title>
 <meta name="description" content="Кадровые документы для малого бизнеса: договоры, приказы и согласия на каждого сотрудника за 10 минут.">
 <meta name="theme-color" content="#1F2B45">
 <link rel="manifest" href="manifest.webmanifest">
@@ -77,6 +77,9 @@ header .btn{padding:12px 20px;font-size:15px}
 .people li:first-child{border-top:0}
 .chip{font:500 13px var(--body);padding:5px 11px;border-radius:999px;white-space:nowrap}
 .c-ok{background:var(--calm-bg);color:var(--calm)}
+.c-warn{background:#FBEBC4;color:#7A5200}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .c-warn{background:#3B3217;color:#F2C38F}}
+:root[data-theme="dark"] .c-warn{background:#3B3217;color:#F2C38F}
 .c-soft{background:var(--soft-bg);color:var(--soft)}
 .ex{font-size:12px;color:var(--muted);align-self:flex-end}
 @media (max-width:880px){.hero-grid{grid-template-columns:1fr}}
@@ -198,14 +201,13 @@ ul.clean{list-style:none;margin:0;padding:0}
   <section class="hero grid">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <p class="tag2">HR в телефоне для малого бизнеса</p>
-        <h1>Кадры в порядке.<br><span>Бизнес в достатке.</span></h1>
-        <p class="lead">Наняли, оформили, отправили в отпуск, расстались — всё в одном приложении. Без бумажной возни и без штатного кадровика.</p>
+        <p class="tag2">HR и кадровик в телефоне</p>
+        <h1>Кадры в порядке<br><span>бизнес в достатке</span></h1>
+        <p class="lead">Всё в одном приложении: наняли, оформили, отправили в отпуск, расстались. Без бумажной возни и без штатного кадровика.</p>
         <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
           <div style="display:flex;flex-wrap:wrap;gap:12px"><a class="btn" href="register.html">Попробовать бесплатно</a><button class="btn btn-line" type="button" data-demo>Посмотреть на примере</button></div>
           <p class="fine">2 минуты на регистрацию. Карта не нужна. От 100 ₽ в месяц за сотрудника.</p>
         </div>
-        <div class="hash"><b>#безкадровика</b><b>#нанялзаминуты</b><b>#прогулыподконтролем</b><b>#отпускаибольничные</b></div>
       </div>
       <div class="ph" aria-label="Пример ленты Штатки"><div class="ph-in"><p class="ph-h">Сегодня в кофейне</p>
         <div class="nt g"><i>✅</i><div><b>Илья вышел на работу</b><small>договор и согласия подписаны</small></div></div><div class="nt "><i>⏰</i><div><b>У Оли медкнижка через 12 дней</b><small>напомнили ей и вам</small></div></div><div class="nt r"><i>🚫</i><div><b>Дима не вышел</b><small>акт об отсутствии готов к подписи</small></div></div><div class="nt g"><i>🏖</i><div><b>Аня в отпуске с понедельника</b><small>график перестроен</small></div></div>
@@ -217,15 +219,13 @@ ul.clean{list-style:none;margin:0;padding:0}
     <div class="wrap">
       <div class="skipgrid">
       <div style="display:flex;flex-direction:column;gap:16px"><p class="eyebrow">Так выглядит экран руководителя</p>
-      <h2>Видно всех сотрудников и что с ними не так — на одном экране</h2>
-      <p class="lead">Выберите свой бизнес справа — пример подстроится.</p></div>
+      <h2>Все сотрудники и что с ними не так на одном экране</h2>
+      <p class="lead">Настройте приложение, функции и вид под свой бизнес. Выберите бизнес справа, и пример подстроится.</p></div>
       <div>
       <div class="screen" aria-label="Пример экрана Штатки">
         <div class="biz" role="tablist" aria-label="Выберите свой бизнес">
-          <button type="button" role="tab" data-biz="cafe" aria-selected="true">Кафе и рестораны</button>
-          <button type="button" role="tab" data-biz="salon" aria-selected="false">Салон</button>
-          <button type="button" role="tab" data-biz="pvz" aria-selected="false">ПВЗ</button>
-          <button type="button" role="tab" data-biz="sklad" aria-selected="false">Склад</button>
+          <button type="button" role="tab" data-biz="cafe" aria-selected="true">Кафе и пекарни</button>
+          <button type="button" role="tab" data-biz="office" aria-selected="false">Офис и IT</button>
         </div>
         <div class="calm"><span class="calm-dot">✓</span><span><b>Всё в порядке</b><span id="calmText">5 сотрудников · документы готовы</span></span></div>
         <ul class="people" id="people"></ul>
@@ -241,9 +241,9 @@ ul.clean{list-style:none;margin:0;padding:0}
       <div class="skipgrid">
         <div style="display:flex;flex-direction:column;gap:16px">
           <p class="eyebrow">Защита работодателя</p>
-          <h2>Не вышел на работу? Документы уже в порядке</h2>
-          <p class="lead">Штатка ведёт весь учёт и готовит бумаги к каждому шагу: от приёма до увольнения. Если дойдёт до спора — у вас порядок в документах.</p>
-          <p class="fine">Это не юридическая консультация. Состав документов зависит от ситуации; сложные споры — к юристу.</p>
+          <h2>Не вышел на работу? Всё под контролем</h2>
+          <p class="lead">Штатка ведёт весь учёт и готовит бумаги к каждому шагу: от приёма до увольнения. Если дойдёт до спора, у вас порядок в документах. Мы готовим комплект документов, который защищает права работодателя.</p>
+          <p class="fine">Это не юридическая консультация. Состав документов зависит от ситуации, а сложные споры решает юрист.</p>
         </div>
         <div class="tl-card"><p class="inside-h">Как Штатка ведёт прогул</p>
           <div class="tl"><span class="tl-d">1</span><div><b>Не вышел на работу</b><small>отметили в графике, напомнили вам</small></div></div>
@@ -268,12 +268,12 @@ ul.clean{list-style:none;margin:0;padding:0}
         <div class="gain">
           <span class="gain-icon"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 14l2 2 4-4"/></svg></span>
           <h3>Готовые документы на каждого</h3>
-          <p>Трудовой договор, приказ, согласия — собраны по вашим данным. Скачали, подписали, готово.</p>
+          <p>Трудовой договор, приказ и согласия собираются по вашим данным. Скачали, подписали, готово.</p>
         </div>
         <div class="gain">
           <span class="gain-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
           <h3>Штатка помнит за вас</h3>
-          <p>Медкнижки, испытательный срок, новые сотрудники — напомнит заранее и подскажет следующий шаг.</p>
+          <p>Медкнижки, испытательный срок, новые сотрудники: напомнит заранее и подскажет следующий шаг.</p>
         </div>
       </div>
     </div>
@@ -284,8 +284,8 @@ ul.clean{list-style:none;margin:0;padding:0}
       <div class="short grid">
         <div style="display:flex;flex-direction:column;gap:14px">
           <h2>Взяли человека на месяц-два?</h2>
-          <p class="lead">Оформить официально теперь так же быстро, как заплатить наличными. Отправили ссылку — человек заполнил анкету с телефона — договор готов. Без звонков бухгалтеру и походов с бумагами.</p>
-          <ul class="clean plus"><li>Штатные и самозанятые — договор под каждого</li><li>Несколько точек — в одном кабинете</li></ul>
+          <p class="lead">Оформить официально теперь так же быстро, как заплатить наличными. Отправили ссылку, человек заполнил анкету с телефона, договор готов. Без звонков бухгалтеру и походов с бумагами.</p>
+          <ul class="clean plus"><li>Штатные и самозанятые: договор под каждого</li><li>Несколько точек в одном кабинете</li></ul>
         </div>
         <ul class="clean jobs" aria-label="Профессии, с которыми работает Штатка">
           <li>Бариста</li><li>Официант</li><li>Повар</li><li>Мастер маникюра</li><li>Парикмахер</li><li>Администратор</li><li>Продавец</li><li>Сотрудник ПВЗ</li><li>Курьер</li><li>Кладовщик</li><li>Комплектовщик</li><li>Грузчик</li><li>Водитель</li><li>Охранник</li><li>Уборщица</li>
@@ -300,9 +300,9 @@ ul.clean{list-style:none;margin:0;padding:0}
       <h2>Три шага от бардака в кадрах до прозрачного, понятного учёта</h2>
       <div class="stairs"><svg viewBox="0 0 900 210" role="img" aria-label="Три ступеньки: регистрация, анкеты, документы"><defs><pattern id="gpl" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#1F2B45" stroke-opacity="0.07" stroke-width="1"/></pattern></defs><rect width="900" height="210" fill="#EAE6DC"/><rect width="900" height="210" fill="url(#gpl)"/><polygon points="150,150 380,150 400,136 170,136" fill="#F2C38F"/><rect x="150" y="150" width="230" height="60" fill="#F7EBDD"/><polygon points="380,150 400,136 400,210 380,210" fill="#E8D5BC"/><text x="172" y="186" font-family="Onest, Arial, sans-serif" font-size="21" font-weight="700" fill="#1F2B45">1 · Регистрация</text><polygon points="380,110 610,110 630,96 400,96" fill="#F2C38F"/><rect x="380" y="110" width="230" height="100" fill="#F7EBDD"/><polygon points="610,110 630,96 630,210 610,210" fill="#E8D5BC"/><text x="402" y="146" font-family="Onest, Arial, sans-serif" font-size="21" font-weight="700" fill="#1F2B45">2 · Анкеты</text><polygon points="610,70 840,70 860,56 630,56" fill="#F2C38F"/><rect x="610" y="70" width="230" height="140" fill="#F7EBDD"/><polygon points="840,70 860,56 860,210 840,210" fill="#E8D5BC"/><text x="632" y="106" font-family="Onest, Arial, sans-serif" font-size="21" font-weight="700" fill="#1F2B45">3 · Документы</text></svg></div>
       <div class="steps">
-        <div class="step"><span class="step-n">1</span><h3>Анкета компании</h3><p>Вводите ИНН — реквизиты подтянутся сами. Дальше режим работы, дни зарплаты, отпуск. Только то, что попадёт в документы.</p><span class="time">10–15 минут</span></div>
-        <div class="step"><span class="step-n">2</span><h3>Сотрудники заполняют сами</h3><p>Отправляете ссылку или QR-код. Каждый заполняет анкету с телефона и даёт согласие на обработку данных.</p><span class="time">5–7 минут на человека</span></div>
-        <div class="step"><span class="step-n">3</span><h3>Готовый пакет и реестр</h3><p>Договор, приказ, Т-2, согласия и инструктаж на каждого в Word. Подписываете, загружаете скан — реестр отмечает комплект.</p><span class="time">1 минута на пакет</span></div>
+        <div class="step"><span class="step-n">1</span><h3>Анкета компании</h3><p>Вводите ИНН, реквизиты подтянутся сами. Дальше режим работы, дни зарплаты, отпуск. Только то, что попадёт в документы.</p><span class="time">10–15 минут</span></div>
+        <div class="step"><span class="step-n">2</span><h3>Заполняем информацию о сотрудниках</h3><p>Отправляете ссылку или QR-код, и сотрудник заполняет анкету с телефона и даёт согласие. Или вносите данные сами, если удобнее.</p><span class="time">5–7 минут на человека</span></div>
+        <div class="step"><span class="step-n">3</span><h3>Готовый пакет и реестр</h3><p>Загружаете действующие документы или создаёте новые: договор, приказ, Т-2, согласия и инструктаж на каждого в Word. Подписываете, загружаете скан, реестр отмечает комплект.</p><span class="time">1 минута на пакет</span></div>
       </div>
     </div>
   </section>
@@ -333,7 +333,7 @@ ul.clean{list-style:none;margin:0;padding:0}
           <a class="btn" href="register.html">Начать с годовым</a>
         </div>
       </div>
-      <p class="fine" style="margin-top:16px">В оба тарифа входит всё: анкеты, документы на каждого сотрудника, экран сотрудников, напоминания о сроках и бесплатная проверка договора. Для первых клиентов цена фиксируется навсегда. <b>Больше 30 сотрудников — напишите нам, сделаем индивидуальную цену.</b></p>
+      <p class="fine" style="margin-top:16px">В оба тарифа входит всё: анкеты, документы на каждого сотрудника, экран сотрудников, напоминания о сроках и бесплатная проверка договора. Для первых клиентов цена фиксируется навсегда. <b>Больше 30 сотрудников? Напишите нам, сделаем индивидуальную цену.</b></p>
     </div>
   </section>
 
@@ -341,11 +341,11 @@ ul.clean{list-style:none;margin:0;padding:0}
     <div class="wrap faq">
       <div style="display:flex;flex-direction:column;gap:12px"><p class="eyebrow">Вопросы</p><h2>Коротко о главном</h2></div>
       <div>
-        <details><summary>Как подписывать документы?</summary><p>Пока на бумаге: скачиваете готовый пакет в Word, распечатываете, подписываете и загружаете скан — Штатка отметит комплект. Подпись в телефоне появится позже.</p></details>
-        <details><summary>У меня мастера самозанятые — это подходит?</summary><p>Да. Для самозанятых Штатка соберёт договор и акт и предупредит, если человек раньше работал у вас в штате: таких два года нельзя оформлять как самозанятых.</p></details>
-        <details><summary>Работают иностранцы — что с ними?</summary><p>Отметьте гражданство в анкете — Штатка подскажет, какие документы нужны: патент, уведомление МВД и сроки. Полный миграционный учёт добавим в следующих версиях.</p></details>
+        <details><summary>Как подписывать документы?</summary><p>Пока на бумаге: скачиваете готовый пакет в Word, распечатываете, подписываете и загружаете скан, Штатка отметит комплект. Подпись в телефоне появится позже.</p></details>
+        <details><summary>У меня мастера самозанятые. Это подходит?</summary><p>Да. Для самозанятых Штатка соберёт договор и акт и предупредит, если человек раньше работал у вас в штате: таких два года нельзя оформлять как самозанятых.</p></details>
+        <details><summary>Работают иностранцы. Что с ними?</summary><p>При приёме выберите «Иностранный паспорт»: договор и личное дело оформятся как обычно. Проверку документов на право работы и уведомления мы подключаем отдельным шагом. Полный миграционный учёт добавим в следующих версиях.</p></details>
         <details><summary>Документов нет совсем. С чего начать?</summary><p>С анкеты компании. Штатка соберёт все документы с нуля: договоры, приказы, согласия и положение о персональных данных.</p></details>
-        <details><summary>У меня больше 30 сотрудников</summary><p>Напишите нам — сделаем индивидуальную цену и поможем перенести сотрудников за один день.</p></details>
+        <details><summary>У меня больше 30 сотрудников</summary><p>Напишите нам, сделаем индивидуальную цену и поможем перенести сотрудников за один день.</p></details>
         <details><summary>Где хранятся данные?</summary><p>На серверах в России, по закону о персональных данных (152-ФЗ). Доступ только у вас и тех, кого вы назначите.</p></details>
       </div>
     </div>
@@ -357,18 +357,18 @@ ul.clean{list-style:none;margin:0;padding:0}
         <p class="eyebrow">Регистрация</p>
         <h2>Пройдите регистрацию и бесплатно проверьте свои документы</h2>
         <ul class="clean next">
-          <li><span>1</span><p>Регистрируетесь за 2 минуты — мы открываем вам кабинет.</p></li>
+          <li><span>1</span><p>Регистрируетесь за 2 минуты, и мы открываем вам кабинет.</p></li>
           <li><span>2</span><p>Загружаете договор и получаете 3 главных риска.</p></li>
           <li><span>3</span><p>Смотрите демо-кабинет и решаете, переносить ли сотрудников в Штатку.</p></li>
         </ul>
       </div>
 
       <div class="form cta-card">
-        <h3 style="font:600 26px/1.2 var(--display);margin:0;letter-spacing:-.02em">Регистрация — 2 минуты</h3>
+        <h3 style="font:600 26px/1.2 var(--display);margin:0;letter-spacing:-.02em">Регистрация за 2 минуты</h3>
         <ul class="clean cta-list">
-          <li>ИНН — реквизиты подтянутся сами</li>
+          <li>ИНН: реквизиты подтянутся сами</li>
           <li>Контакты для счетов и документов</li>
-          <li>Код из SMS — и кабинет готов</li>
+          <li>Код из почты, и кабинет готов</li>
         </ul>
         <a class="btn" href="register.html" style="width:100%">Зарегистрироваться</a>
         <p class="fine" style="margin:0;text-align:center">Откроется страница регистрации. Без оплаты и карты.</p>
@@ -416,10 +416,8 @@ ul.clean{list-style:none;margin:0;padding:0}
 (function(){
   const $=s=>document.querySelector(s);
   const B={
-    cafe:[['Анна Петрова','управляющая','Всё подписано','ok'],['Илья Смирнов','бариста','Всё подписано','ok'],['Ольга Ким','официант','Всё подписано','ok'],['Тимур Ахметов','бариста · на 2 месяца','Оформлен за 10 минут','ok'],['Дмитрий Орлов','повар','Медкнижка: напомним заранее','soft']],
-    salon:[['Марина Белова','администратор','Всё подписано','ok'],['Кристина Лис','мастер маникюра','Всё подписано','ok'],['Алина Юсупова','мастер маникюра','Всё подписано','ok'],['Вера Соколова','бровист · самозанятая','Договор и акт готовы','ok'],['Екатерина Ли','мастер педикюра','Подписать договор','soft']],
-    pvz:[['Сергей Волков','старший смены','Всё подписано','ok'],['Дарья Морозова','сотрудник ПВЗ','Всё подписано','ok'],['Азиз Каримов','сотрудник ПВЗ','Всё подписано','ok'],['Полина Гусева','сотрудник ПВЗ · на 2 месяца','Оформлена за 10 минут','ok'],['Никита Зуев','сотрудник ПВЗ','Анкета заполнена · договор готов','soft']],
-    sklad:[['Олег Фёдоров','начальник смены','Всё подписано','ok'],['Руслан Ибрагимов','кладовщик','Всё подписано','ok'],['Иван Кузнецов','комплектовщик','Всё подписано','ok'],['Артём Белов','водитель погрузчика','Удостоверение: напомним заранее','soft'],['Максим Орлов','грузчик · на сезон','Оформлен за 10 минут','ok']]
+    cafe:[['Анна Петрова','управляющая','Всё подписано','ok'],['Илья Смирнов','бариста','Всё подписано','ok'],['Ольга Ким','официант','Всё подписано','ok'],['Тимур Ахметов','бариста · на 2 месяца','Оформлен за 10 минут','ok'],['Дмитрий Орлов','повар','Медкнижка истекает через 29 дней','warn']],
+    office:[['Олег Зайцев','директор','Всё подписано','ok'],['Анна Павлова','разработчик','Испытательный: решение через 20 дней','warn'],['Игорь Степанов','разработчик','Нужен договор об удалёнке','warn'],['Елена Новикова','руководитель проектов','Всё подписано','ok'],['Роман Морозов','тестировщик','Больничный до пятницы','ok']]
   };
   function show(k){
     document.querySelectorAll('[data-biz]').forEach(b=>b.setAttribute('aria-selected',b.dataset.biz===k));
@@ -439,7 +437,7 @@ ul.clean{list-style:none;margin:0;padding:0}
     if(!name)msg='Напишите, как к вам обращаться.';
     else if(phone.length<10)msg='Проверьте телефон: нужно 10–11 цифр.';
     else if(!/^\S+@\S+\.\S+$/.test(email))msg='Проверьте почту: на неё придёт ссылка для входа.';
-    else if(!$('#agree').checked)msg='Отметьте согласие на обработку данных — без него не можем открыть кабинет.';
+    else if(!$('#agree').checked)msg='Отметьте согласие на обработку данных, без него не можем открыть кабинет.';
     $('#err').hidden=!msg;$('#err').textContent=msg;
     if(msg)return;
     $('#form').hidden=true;$('#done').hidden=false;

@@ -1,14 +1,15 @@
-/* Раздел «Люди»: приём, увольнение, карточка сотрудника. Всё, что вносится здесь, сразу попадает в остальные разделы
+/* Раздел «Сотрудники»: приём, увольнение, карточка сотрудника. Всё, что вносится здесь, сразу попадает в остальные разделы
    (воинский учёт, иностранцы, зарплата, больничные, документы и сроки, трудовая книжка, архив). Ядро — hr-core.js. */
 (function(){
 const H=window.SHTATKA_HOME,UI=window.SHTATKA_UI,R=window.SHTATKA_HR,esc=UI.esc,toast=UI.toast;
+const X=window.SHTATKA_XLSX;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const cfg=window.SHTATKA_CONFIG||{};
 const d=R.d;
 const PLU=(n,a,b,c)=>{const m=n%100,k=n%10;return (m>10&&m<20)?c:k===1?a:(k>=2&&k<=4)?b:c;};
 const real=H.real();
 let bypass=false;try{bypass=sessionStorage.getItem('shtatka-demo-bypass')==='1'}catch(e){}
-const canEdit=()=>!real||H.verified()||bypass;
+const canEdit=()=>true;
 let kind='new',sex='m',upMode='upload',pending=null,cur=null,tab='data';
 
 const opt=(o,sel)=>Object.entries(o).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${esc(typeof v==='string'?v:v.t)}</option>`).join('');
@@ -25,15 +26,15 @@ function render(){
   $('#pActs').hidden=none&&false;
   $('#pSub').textContent=none?'Сотрудников пока нет. Выберите, с чего начать.':('В штате '+n+' '+PLU(n,'человек','человека','человек')+'. Всё, что вы вносите здесь, появляется в остальных разделах.');
   if(none){$('#todo').hidden=true;return;}
-  const mil=all.filter(e=>['in','check'].includes(R.mil(e).st)).length,fr=all.filter(e=>!!R.foreign(e)).length,sk=all.filter(e=>R.onSick(e)).length,ov=R.overdue().length;
-  $('#kpis').innerHTML=[['В штате',n,'people.html'],['Воинский учёт',mil,'military.html'],['Иностранцы',fr,'foreign.html'],['На больничном',sk,'sick.html'],['Просрочено',ov,'docs.html',ov?'crit':'']].map(k=>`<a class="kpi ${k[3]||''}" href="${k[2]}"><b>${k[1]}</b><span>${k[0]}</span></a>`).join('');
+  const mil=all.filter(e=>['in','check'].includes(R.mil(e).st)).length,sk=all.filter(e=>R.onSick(e)).length,ov=R.overdue().length;
+  $('#kpis').innerHTML=[['В штате',n,'people.html'],['Воинский учёт',mil,'military.html'],['На больничном',sk,'sick.html'],['Просрочено',ov,'docs.html',ov?'crit':'']].map(k=>`<a class="kpi ${k[3]||''}" href="${k[2]}"><b>${k[1]}</b><span>${k[0]}</span></a>`).join('');
   const t=R.openTasks().sort((a,b)=>a.due<b.due?-1:1).slice(0,5);
   $('#todo').hidden=!t.length;
   $('#todo').innerHTML=t.length?`<div class="bh"><h2>Что сделать</h2><a href="docs.html">Все сроки →</a></div><div class="tl">${t.map(x=>taskRow(x)).join('')}</div>`:'';
   const units=H.units();
   $('#list').innerHTML=all.map(x=>{const p=x.fio.split(/\s+/);const u=units.find(y=>y.id===x.unit);
     const tags=[];const m=R.mil(x);if(m.st==='in')tags.push('<span class="pill info">воинский учёт</span>');if(m.st==='check')tags.push('<span class="pill warn">уточнить учёт</span>');
-    const f=R.foreign(x);if(f)tags.push(`<span class="pill ${f.lvl==='ok'?'info':f.lvl}">иностранец</span>`);if(R.onSick(x))tags.push('<span class="pill warn">на больничном</span>');
+    if(x.regime!=='ru')tags.push('<span class="pill info">иностранный паспорт</span>');if(R.onSick(x))tags.push('<span class="pill warn">на больничном</span>');
     {const so=DZ.soon(x,30);so.forEach(y=>tags.push(`<span class="pill ${y.expired?'crit':'warn'}">${esc(DZ.SHORT[y.k]||y.t)} ${y.expired?'просрочен':'до '+d.fmt(y.until)}</span>`));
      const pr=DZ.progress(x);if(pr.missing.length)tags.push(`<span class="pill warn">документы: ${pr.done}/${pr.total}</span>`);}
     if(x.contract==='self'){const ok=x.npd&&x.npd.status&&d.diff(x.npd.checkedAt.slice(0,10),d.today())<=30;tags.push(`<span class="pill ${ok?'info':'warn'}">${ok?'самозанятый ✓':'проверить НПД'}</span>`);}
@@ -47,19 +48,23 @@ const cabSt=x=>{const c=x.cab;if(!c)return {k:'none'};if(c.joinedAt)return {k:'i
 const fmtExp=ms=>{const z=new Date(ms);return String(z.getDate()).padStart(2,'0')+'.'+String(z.getMonth()+1).padStart(2,'0');};
 function taskRow(x){
   const late=x.due<d.today();
-  return `<div class="tk ${late?'late':''}"><label><input type="checkbox" data-task="${x.id}" data-eid="${x.eid}"${x.done?' checked':''}><span><b>${esc(x.title)}</b><small>${esc(x.fio)} · ${esc(x.law)}</small></span></label><span class="pill ${late?'crit':'info'}">${late?'просрочено, ':'до '}${d.fmt(x.due)}</span></div>`;
+  const how=x.how&&x.how.length?`<details class="how"><summary>Как сделать</summary><ol>${x.how.map(h=>'<li>'+esc(h)+'</li>').join('')}</ol></details>`:'';
+  return `<div class="tk ${late?'late':''}"><label><input type="checkbox" data-task="${x.id}" data-eid="${x.eid}"${x.done?' checked':''}><span><b>${esc(x.title)}</b><small>${esc(x.fio)} · ${esc(x.law)}</small></span></label><span class="pill ${late?'crit':'info'}">${late?'просрочено, ':'до '}${d.fmt(x.due)}</span>${x.key==='cf'&&!x.done?`<button type="button" class="b" data-cf="${x.eid}">Заполнить</button>`:''}${how}</div>`;
 }
 function open(id){const e=$(id);if(e.showModal)e.showModal();else e.setAttribute('open','');}
 function close(e){if(e.open)e.close();}
 function want(what){
   if(what==='check'){openUpload('check');return;}
   if(!canEdit()){pending=what;$('#gDemo').hidden=$('#gSkip').hidden=!!cfg.apiUrl;open('#dGate');return;}
-  if(what==='add')openAdd('new');else if(what==='fire')openFire();else if(what==='bulk'){$('#bText').value='';$('#bNote').hidden=true;open('#dBulk');}else openUpload('upload');
+  if(what==='add')openAdd('new');else if(what==='fire')openFire();else if(what==='bulk'){$('#bNote').hidden=true;open('#dBulk');}else openUpload('upload');
 }
 
 /* ---------- приём: шаг 1 «Человек» (паспорт по фото или вручную), шаг 2 «Договор» ---------- */
 const PP=window.SHTATKA_PASSPORT;
-let step=1,mode='hire',auto=new Set(),npdForm=null,pend=[];
+let step=1,mode='hire',auto=new Set(),npdForm=null,pend=[],inMode='photo';
+function setPt(k){$$('#ppTabs [data-pt]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pt===k));$$('.pp .up').forEach(u=>{u.hidden=u.dataset.up!==k;});}
+function setIn(m){inMode=m;$$('#inMode [data-in]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.in===m));if(m==='photo')setPt('main');}
+
 const DZ=window.SHTATKA_DOSSIER,JB=window.SHTATKA_JOBS;
 let ans={},modeTouched=false;
 const LAB=c=>c==='open'||c==='fixed';
@@ -83,7 +88,7 @@ function workData(){
 const formData=()=>Object.assign(personData(),workData(),{existing:kind==='existing'});
 function boxes(){
   const reg=$('#eReg').value,ru=reg==='ru',c=$('#eCon').value,lab=LAB(c);
-  $('#boxFor').hidden=ru;$('.pp').hidden=!ru;$('#ppFor').hidden=ru;
+  $('#boxFor').hidden=ru;$('.pp').hidden=!ru||inMode!=='photo';$('#inMode').hidden=!ru;$('#ppFor').hidden=ru;
   $('#boxMil').hidden=!ru;
   $('#eVusW').hidden=sex!=='f';
   if(sex==='f'){const v=$('#eVus').checked;$('#eMilCat').closest('.fld').hidden=!v;$('#eFit').closest('.fld').hidden=!v;}
@@ -119,15 +124,14 @@ function preview(){
   const f=formData(),tmp=Object.assign({id:'x',prev:[],tasks:[],sick:[],etk:{}},f),lab=LAB(f.contract);
   const rows=[];
   if(mode==='contract')rows.push(['Договор','обновим условия в карточке и откроем черновик']);
-  else{rows.push(['Люди','попадёт в штат']);rows.push(['Документы',lab?'договор, приказ Т-1, согласие, карточка Т-2':'договор '+(R.CONTRACT[f.contract]||'').toLowerCase()]);
+  else{rows.push(['Сотрудники','попадёт в штат']);rows.push(['Документы',lab?'договор, приказ Т-1, согласие, карточка Т-2':'договор '+(R.CONTRACT[f.contract]||'').toLowerCase()]);
     if(lab)rows.push(['Трудовая книжка','ЕФС-1 о приёме до '+d.fmt(d.nextWork(f.start))]);}
   const b=R.get(f.managerId);if(b)rows.push(['Руководитель',b.fio+(b.position?', '+b.position:'')]);
   if(b&&(f.contract==='self'||f.contract==='gph'))rows.push(['Риск','подчинение руководителю — признак трудовых отношений: по ГПХ и с самозанятым его лучше не указывать (ст. 15, 19.1 ТК)']);
   if(f.salary){const P=window.SHTATKA_PAYROLL;
     rows.push(['Платежи',f.contract==='self'?'НДФЛ и взносов нет: самозанятый платит налог сам, проверяйте чек':f.contract==='rent'?'только НДФЛ 13 %: аренда взносами не облагается':f.regime==='hqs'?'НДФЛ; взносов нет (ВКС), травматизм — да':'НДФЛ, взносы'+(f.contract==='gph'&&!f.gphInjury?' (без травматизма)':', травматизм')]);
     if(lab&&f.salary<R.mrotNow()*(f.rate||1))rows.push(['МРОТ','оклад ниже МРОТ '+R.mrotNow().toLocaleString('ru-RU')+' ₽'+(f.rate<1?' × ставка':'')+': доплатите до минимума']);}
-  if(f.regime!=='ru'&&mode!=='contract')rows.push(['Иностранцы','уведомление в МВД до '+d.fmt(d.addWork(f.start,3))]);
-  else if(mode!=='contract'){const m=R.mil(tmp,f.start);if(m.st==='in')rows.push(['Воинский учёт','сведения в военкомат до '+d.fmt(d.addWork(f.start,5))]);else if(m.st==='check')rows.push(['Воинский учёт','уточнить: '+m.why]);}
+  if(f.regime==='ru'&&mode!=='contract'){const m=R.mil(tmp,f.start);if(m.st==='in')rows.push(['Воинский учёт','сведения в военкомат до '+d.fmt(d.addWork(f.start,5))]);else if(m.st==='check')rows.push(['Воинский учёт','уточнить: '+m.why]);}
   if(f.contract==='fixed'&&!f.contractEnd)rows.push(['Внимание','у срочного договора нужна дата окончания']);
   const ps=f.regime==='ru'?passStale(f.birth,f.passport.issueDate):'';if(ps)rows.push(['Паспорт',ps]);
   $('#ePrev').innerHTML='<b>Что произойдёт</b>'+rows.map(r=>`<div><span>${esc(r[0])}</span><i>${esc(r[1])}</i></div>`).join('');
@@ -147,7 +151,7 @@ function resetForm(){
   $('#fAdd').querySelectorAll('input').forEach(i=>{if(i.type==='checkbox')i.checked=false;else if(i.type!=='file')i.value='';});
   $('#eReg').value='ru';$('#eCon').value='open';$('#eRate').value='1';$('#eProb').value='0';
   const qm=(H.state().company||{}).mode;if(qm)$('#eMode').value=qm;
-  pend=[];ans={};modeTouched=false;$('#eKeep').checked=true;
+  pend=[];ans={};modeTouched=false;$('#eKeep').checked=true;setIn('photo');
   ['main','reg','snils'].forEach(k=>{$('#upSt_'+k).textContent='';$('#upImg_'+k).classList.remove('has');const im=$('#upImg_'+k).querySelector('img');if(im)im.remove();});
   npdForm=null;$('#eSelfSt').className='up-st';$('#eSelfSt').textContent='Статус проверяют перед договором и перед каждой выплатой.';
   auto.clear();$$('#fAdd .auto').forEach(x=>x.classList.remove('auto'));
@@ -181,8 +185,9 @@ function openContract(id){
 function check1(){const f=personData();
   if(!f.surname||!f.name)return 'Напишите фамилию и имя.';
   if(!f.birth)return 'Укажите дату рождения: по ней определяем воинский учёт и условия труда.';
+  if(f.birth>d.today())return 'Дата рождения не может быть в будущем.';
+  if(f.birth<'1900-01-01')return 'Проверьте год рождения: он слишком ранний.';
   if(f.regime==='ru'&&f.passport.series&&(f.passport.series+f.passport.number).length!==10)return 'Серия и номер паспорта РФ — 10 цифр.';
-  if(f.regime!=='ru'&&f.regime!=='eaeu'&&!f.permitUntil)return 'Укажите, до какого числа действует документ на работу.';
   if(f.innP&&!(window.SHTATKA_COMPANY&&window.SHTATKA_COMPANY.innOk(f.innP)&&f.innP.length===12))return 'ИНН человека — 12 цифр, в этих ошибка. Проверьте или оставьте пустым.';
   if(f.snils&&!PP.snilsOk(f.snils))return 'СНИЛС: в номере ошибка (не сходится контрольное число). Проверьте 11 цифр.';
   return '';}
@@ -199,6 +204,7 @@ function check2(){const f=workData();
 const err=t=>{$('#eErr').hidden=!t;$('#eErr').textContent=t||'';if(t)$('#eErr').scrollIntoView({block:'nearest'});};
 $('#toSt2').addEventListener('click',()=>{const e1=check1();if(e1)return err(e1);goStep(2);});
 $('#toSt1').addEventListener('click',()=>goStep(1));
+$('#fAdd').addEventListener('click',e=>{const m=e.target.closest('[data-in]');if(m){setIn(m.dataset.in);boxes();return;}const t=e.target.closest('[data-pt]');if(t)setPt(t.dataset.pt);});
 $('#fAdd').addEventListener('click',e=>{const b=e.target.closest('[data-ans]');if(!b)return;const [k,v]=b.dataset.ans.split(':');ans[k]=v==='true';preview();});
 $('#fAdd').addEventListener('change',e=>{if(e.target.id==='eInd'){H.state().company.industry=e.target.value;H.persist();preview();}if(e.target.id==='eMode')modeTouched=true;});
 $('#fAdd').addEventListener('input',e=>{if(e.target.id==='eInd')return;if(e.target.classList.contains('auto'))e.target.classList.remove('auto');boxes();preview();});
@@ -217,9 +223,10 @@ $('#fAdd').addEventListener('submit',e=>{
   f.contractNo=R.nextNo();const x=R.hire(f);
   if(window.__akFid){dropInbox(window.__akFid);window.__akFid=null;}
   if($('#eKeep').checked&&pend.length)saveCopies(x.id,pend.slice());
-  close($('#dAdd'));render();openCard(x.id,'docs');showDoc(x,DOCKEY(x));
-  const n=[];if(f.regime!=='ru')n.push('иностранцы');else if(['in','check'].includes(R.mil(x).st))n.push('воинский учёт');
+  close($('#dAdd'));render();
+  const n=[];if(f.regime==='ru'&&['in','check'].includes(R.mil(x).st))n.push('воинский учёт');
   toast('Карточка создана, черновик договора открыт. Сроки уже в работе: документы'+(f.salary?', зарплата':'')+(n.length?', '+n.join(', '):'')+'.');
+  openCF(x.id,true);
 });
 /* паспорт по фото */
 if(!matchMedia('(pointer:coarse)').matches){$$('.up .cam').forEach(x=>x.hidden=true);$$('.up label.b:not(.cam)').forEach(l=>{if(l.firstChild&&l.firstChild.nodeType===3)l.firstChild.nodeValue='Выбрать файл';});}
@@ -229,7 +236,7 @@ function applyFields(f){
   Object.entries(FIELD).forEach(([k,s])=>put(s,f[k]));
   if(f.series||f.number){put('#ePass',(f.series||'')+(f.number?' '+f.number:''));}
   if(f.sex){sex=f.sex;$$('[data-sex]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.sex===sex));n++;}
-  if(f.citizenship&&!/росс/i.test(f.citizenship)){$('#eReg').value='rvp';$('#eCountry').value=f.citizenship;}
+  if(f.citizenship&&!/росс/i.test(f.citizenship)){$('#eReg').value='foreign';$('#eCountry').value=f.citizenship;}
   boxes();return n;
 }
 $('#fAdd').addEventListener('change',async e=>{
@@ -248,6 +255,57 @@ $('#fAdd').addEventListener('change',async e=>{
   st.className='up-st '+(n?'ok':'bad');
   st.textContent=r.demo?'Демо: подставлен пример, сервер распознавания не подключён':n?'Заполнено полей: '+n+'. Проверьте подсвеченные':'Данных не нашли: снимите ровнее или введите вручную';
 });
+
+/* ---------- данные для договора (форма v1.0): что внесено, чего не хватает ---------- */
+let cfId=null,cfThen=false;
+const CFI=(f,e,miss)=>{
+  const v=f.get(e),m=miss.has(f.k)?' miss':'',id='cf_'+f.k,hid=f.hideIf&&e[f.hideIf]?' hidden':'';
+  if(f.t==='bool')return `<label class="chk wide2"><input type="checkbox" data-cfk="${f.k}"${v?' checked':''}> ${esc(f.l)}</label>`;
+  if(f.t==='multi')return `<div class="fld wide2"><span>${esc(f.l)}</span><div class="cf-m">${f.opts.map(o=>`<label class="chk"><input type="checkbox" data-cfk="${f.k}" value="${o[0]}"${(v||[]).includes(o[0])?' checked':''}> ${esc(o[1])}</label>`).join('')}</div></div>`;
+  if(f.t==='sel')return `<label class="fld${m}">${esc(f.l)}<select data-cfk="${f.k}">${f.opts.map(o=>`<option value="${esc(o[0])}"${String(v)===o[0]?' selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
+  const ty=f.t==='date'?'date':f.t==='tel'?'tel':f.t==='email'?'email':'text';
+  return `<label class="fld${m}${f.k==='regAddress'||f.k==='liveAddress'||f.k==='workPlace'||f.k==='pby'?' wide2':''}" data-cfw="${f.k}"${hid}>${esc(f.l)}<input data-cfk="${f.k}" type="${ty}"${f.t==='num'?' inputmode="numeric"':''} value="${esc(v)}" placeholder="${esc(f.ph||'')}" autocomplete="off"></label>`;
+};
+function paintCF(){
+  const e=R.get(cfId);if(!e)return;const g=R.contractGaps(e),miss=new Set(g.emp.map(x=>x.k));
+  let h=`<p class="who">${esc(e.fio)}${e.position?' · '+esc(e.position):''}</p>`;
+  h+=g.emp.length?`<p class="note2">В договоре не хватает данных: ${g.emp.length}. Подсвечены жёлтым. Что не заполните, в договоре останется линией для ручного заполнения.</p>`:'<p class="note2">Всё для договора внесено. Проверьте и откройте черновик.</p>';
+  if(g.co.length)h+=`<div class="sub"><b>Из анкеты компании:</b> ${g.co.map(x=>esc(x.l)).join('; ')}. <a href="company.html">Заполнить →</a></div>`;
+  Object.entries(R.CFS).forEach(([s,t])=>{h+=`<h4 class="cf-h">${t}</h4><div class="cf-g">`+R.CF.filter(f=>f.s===s).map(f=>CFI(f,e,miss)).join('')+'</div>';});
+  $('#cfBody').innerHTML=h;$('#cfErr').hidden=true;
+}
+function openCF(id,then){const e=R.get(id);if(!e)return;cfId=id;cfThen=!!then;close($('#dCard'));paintCF();$('#cfSave').textContent=then?'Сохранить и открыть договор':'Сохранить';open('#dCF');}
+function cfCollect(){
+  const e=R.get(cfId),patch={};
+  R.CF.forEach(f=>{
+    const els=$$('#cfBody [data-cfk="'+f.k+'"]');if(!els.length)return;
+    let v;if(f.t==='multi')v=els.filter(x=>x.checked).map(x=>x.value);else if(f.t==='bool')v=els[0].checked;else v=els[0].value.trim();
+    Object.assign(patch,f.put(v,Object.assign({},e,patch)));
+  });
+  return patch;
+}
+function cfCheck(p){
+  const co=window.SHTATKA_COMPANY;
+  if(p.innP&&!(co&&co.innOk(p.innP)&&p.innP.length===12))return 'ИНН человека — 12 цифр, в этих ошибка. Проверьте или оставьте пустым.';
+  if(p.snils&&!PP.snilsOk(p.snils))return 'СНИЛС: в номере ошибка (не сходится контрольное число). Проверьте 11 цифр.';
+  const ps=(p.passport||{});if(ps.series&&(ps.series+ps.number).length!==10)return 'Серия и номер паспорта — 10 цифр.';
+  if(ps.issueDate&&ps.issueDate>d.today())return 'Дата выдачи паспорта не может быть в будущем.';
+  return '';
+}
+function cfSave(){
+  const e=R.get(cfId);if(!e)return;const p=cfCollect(),er=cfCheck(p);
+  if(er){$('#cfErr').hidden=false;$('#cfErr').textContent=er;return;}
+  R.update(cfId,p);const g=R.contractGaps(R.get(cfId));
+  const tk=(R.get(cfId).tasks||[]).find(t=>t.key==='cf');
+  if(tk){if(!g.emp.length){tk.done=true;}else tk.title='Дозаполнить данные для договора: не хватает '+g.emp.length;}
+  R.save();close($('#dCF'));render();
+  const x=R.get(cfId);
+  if(cfThen){openCard(cfId,'docs');showDoc(x,DOCKEY(x));toast(g.emp.length?'Договор открыт. Не хватает полей: '+g.emp.length+', они остались линиями.':'Договор заполнен по данным сотрудника.');}
+  else{if(cur===cfId&&!$('#dCard').open)openCard(cfId,'docs');toast(g.emp.length?'Сохранено. Не хватает полей: '+g.emp.length:'Данные для договора внесены полностью.');}
+}
+$('#fCF').addEventListener('submit',ev=>{ev.preventDefault();cfSave();});
+$('#fCF').addEventListener('change',ev=>{if(ev.target.dataset.cfk==='liveSame'){const w=$('#cfBody [data-cfw="liveAddress"]');if(w)w.hidden=ev.target.checked;}});
+$('#cfLater').addEventListener('click',()=>{close($('#dCF'));const x=R.get(cfId);render();if(cfThen&&x){openCard(cfId,'docs');showDoc(x,DOCKEY(x));}});
 const DOCKEY=e=>({gph:'gph',rent:'rent',self:'self'}[e.contract]||'td');
 async function saveCopies(id,list){const e=R.get(id);if(!e)return;const ds=Object.assign({},e.dossier||{});
   for(const p of list){try{const m=await DZ.putFile(p.blob,p.name);const c=ds[p.k]||{files:[]};c.files=(c.files||[]).concat(m);c.state='copy';c.at=d.today();if(p.until)c.until=p.until;ds[p.k]=c;}catch(x){}}
@@ -272,7 +330,7 @@ document.addEventListener('click',async ev=>{const b=ev.target.closest('[data-np
 function csv(name,head,rows){const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   const t='\ufeff'+[head,...rows].map(r=>r.map(q).join(';')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();}
-$('#exp1c').addEventListener('click',()=>{
+const exp1c=()=>{
   const all=R.active();if(!all.length){toast('Сотрудников пока нет.');return;}
   const D_=x=>x?d.fmt(x):'',units=H.units(),sp=e=>(e.fio||'').split(/\s+/);
   csv('sotrudniki-1c-'+d.today()+'.csv',
@@ -282,22 +340,23 @@ $('#exp1c').addEventListener('click',()=>{
        e.regime==='ru'?'Паспорт гражданина РФ':'Паспорт иностранного гражданина',pp.series||'',pp.number||'',D_(pp.issueDate),pp.issuedBy||'',pp.code||'',e.regAddress||'',e.phone||'',
        e.position||'',u?u.name:'',R.CONTRACT[e.contract]||'',D_(e.start),D_(e.contractEnd),String(e.rate||1).replace('.',','),e.salary||'',e.probation||0,b?b.fio:'',e.remote?'да':'нет',e.permitNo||'',D_(e.permitUntil)];}));
   toast('Файл для 1С скачан: CSV, разделитель «;», даты ДД.ММ.ГГГГ. Загрузите обработкой «из Excel» в ЗУП.');
-});
+};
 
-/* список для заказчика или генподрядчика: кто, где, допуски и сроки документов — без паспортов и адресов */
+/* таблица сотрудников в Excel: те же колонки, что в шаблоне загрузки */
+const XCOLS=[['Фамилия *',18],['Имя *',14],['Отчество',18],['Дата рождения * (ДД.ММ.ГГГГ)',16],['Должность *',22],['Оклад, ₽',12],['Дата приёма (ДД.ММ.ГГГГ)',16],['Пол (м/ж)',9],['Гражданство',14],['Телефон',16],['Email',24],['ИНН',14],['СНИЛС',15],['Подразделение',18],['Вид договора',24]];
+const spl=e=>{const sp=(e.fio||'').split(/\s+/);return [e.surname||sp[0]||'',e.name||sp[1]||'',e.middle||sp.slice(2).join(' ')];};
 $('#expObj').addEventListener('click',()=>{
   const all=R.active();if(!all.length){toast('Сотрудников пока нет.');return;}
-  const units=H.units();
-  const till=(e,k)=>{const it=DZ.items(e).find(y=>y.k===k);if(!it||it.need==='off')return '—';return it.until?(it.expired?'просрочено ':'до ')+d.fmt(it.until):(it.state!=='none'?'есть':'нет');};
-  csv('spisok-dlya-zakazchika-'+d.today()+'.csv',['Подразделение / объект','ФИО','Должность','Гражданство','Документ на работу до','Медкнижка','Права','Удостоверение о квалификации','Личное дело'],
-   all.map(e=>{const un=units.find(x=>x.id===e.unit),pr=DZ.progress(e);return [un?un.name:'',e.fio,e.position||'',e.country||'Россия',e.permitUntil?d.fmt(e.permitUntil):(e.regime==='ru'?'не нужен':''),till(e,'med'),till(e,'drv'),till(e,'edu'),pr.done+' из '+pr.total];}));
-  toast('Список скачан: без паспортных данных и адресов — их заказчику передавать не нужно.');
+  const units=H.units(),D_=x=>x?d.fmt(x):'';
+  const rows=[XCOLS.map(c=>c[0])].concat(all.map(e=>{const un=units.find(x=>x.id===e.unit);return [...spl(e),D_(e.birth),e.position||'',+e.salary||'',D_(e.start),e.sex==='f'?'ж':'м',e.country||'Россия',e.phone||'',e.email||'',e.innP||'',e.snils||'',un?un.name:'',R.CONTRACT[e.contract]||''];}));
+  X.download('sotrudniki-'+d.today()+'.xlsx',X.build([{name:'Сотрудники',rows,widths:XCOLS.map(c=>c[1])}]));
+  toast('Список скачан: Excel, '+all.length+' '+PLU(all.length,'сотрудник','сотрудника','сотрудников')+'. Паспортные данные в файл не входят.');
 });
 
 /* ---------- анкета по ссылке: приглашение, входящие, перенос данных ---------- */
 const b64=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 let invAns={},invEmp=null;
-const FOREIGN_NEED={patent:['fpass','patent','migcard','reg'],permit:['fpass','permit','migcard','reg'],rvp:['fpass','rvp'],eaeu:['fpass','migcard'],hqs:['fpass','permit','dms','migcard','reg']};
+const FOREIGN_NEED={foreign:['fpass']};
 function invData(){
   const pos=$('#iPos').value.trim(),reg=$('#iReg').value,remote=$('#iRem').checked,ind=JB.industry();
   const A=JB.advise({industry:ind.id,position:pos,remote,age:null,answers:invAns}),need=[];
@@ -359,18 +418,16 @@ function applyAnketa(p,fid){
   setv('#eSur',x.surname);setv('#eName',x.name);setv('#eMid',x.middle);setv('#eBirth',x.birth);setv('#eBPlace',x.birthPlace);setv('#ePassDate',x.issueDate);setv('#ePassBy',x.issuedBy);setv('#ePassCode',x.code);setv('#eAddr',x.regAddress);setv('#eAddrDate',x.regDate);setv('#ePhone',x.phone);setv('#eEmail',x.email);setv('#eSnils',x.snils);setv('#eInnP',x.innP);
   if(x.series)setv('#ePass',x.series+' '+x.number);
   if(x.sex){sex=x.sex;$$('[data-sex]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sex===sex));}
-  if(p.foreign){$('#eReg').value='patent';setv('#eCountry',x.country);}
+  if(p.foreign){$('#eReg').value='foreign';setv('#eCountry',x.country);}
   pend=[];Object.entries(p.files||{}).forEach(([k,arr])=>arr.forEach(f=>pend.push({k:KEYMAP[k]||k,blob:b2blob(f.b64,f.mime),name:f.name,until:((p.docs||{})[k]||{}).until||''})));
   window.__akFid=fid;boxes();$('#st1').scrollTop=0;toast('Данные из анкеты подставлены. Проверьте подсвеченные поля и нажмите «Далее».');
 }
 async function dropInbox(fid){if(!fid)return;localStorage.setItem('shtatka-anketa-inbox',JSON.stringify(inboxList().filter(x=>x.fid!==fid)));await DZ.delFile(fid).catch(()=>{});paintInbox();}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-ak],[data-akdel],#akFile');if(!b)return;
-  if(b.id==='akFile'){$('#akImport').click();return;}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-ak],[data-akdel]');if(!b)return;
+  
   if(b.dataset.akdel){await dropInbox(b.dataset.akdel);return;}
   const p=await readFileJson(b.dataset.ak);if(!p){toast('Анкета не найдена на этом устройстве.');return;}
   if(!canEdit()){want('add');return;}applyAnketa(p,b.dataset.ak);});
-$('#akImport').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{const p=JSON.parse(await f.text());if(p.v!==1||!p.person)throw 0;if(!canEdit()){want('add');return;}applyAnketa(p,null);}catch(x){toast('Это не анкета Штатки. Попросите человека прислать файл снова.');}});
 paintInbox();
 
 /* ---------- структура подчинённости ---------- */
@@ -388,26 +445,42 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');
   $$('[data-view]').forEach(x=>x.setAttribute('aria-pressed',x===b));
   $('#list').hidden=view!=='list';$('#org').hidden=view!=='tree';if(view==='tree')renderOrg();});
 
-/* ---------- импорт списком ---------- */
-$('#fBulk').addEventListener('submit',e=>{
-  e.preventDefault();const lines=$('#bText').value.split(/\n/).map(x=>x.trim()).filter(Boolean);let ok=0,bad=[];
-  lines.forEach((l,i)=>{const c=l.split(/[;\t]/).map(x=>x.trim());
-    const [fio,birth,pos,sal,start,sx,cit]=c;
-    if(!fio||fio.split(/\s+/).length<2||!/^\d{4}-\d{2}-\d{2}$/.test(birth||'')||!pos){bad.push(i+1);return;}
-    const ru=!cit||/^(рф|россия|ru)$/i.test(cit);
-    R.hire({fio,birth,position:pos,salary:+String(sal||'').replace(/\s/g,'')||0,start:/^\d{4}-\d{2}-\d{2}$/.test(start||'')?start:d.today(),sex:/^ж/i.test(sx||'')?'f':'m',regime:ru?'ru':'patent',country:ru?'Россия':cit,existing:true});ok++;});
-  const n=$('#bNote');n.hidden=false;
-  n.textContent='Добавлено: '+ok+(bad.length?'. Не разобрали строки: '+bad.join(', ')+' (нужны ФИО, дата рождения ГГГГ-ММ-ДД и должность).':'.')+(ok?' Иностранцев без срока патента проверьте в карточке.':'');
-  render();if(ok&&!bad.length)setTimeout(()=>close($('#dBulk')),900);
+/* ---------- импорт списком из Excel ---------- */
+$('#bTpl').addEventListener('click',()=>{
+  const head=XCOLS.map(c=>c[0]);
+  const sample=['ПРИМЕР: Иванов','Иван','Иванович','15.03.1990','Кладовщик',55000,'10.05.2024','м','Россия','+7 900 000-00-00','ivanov@mail.ru','','','Склад','Трудовой бессрочный'];
+  const how=[['Как заполнять'],['Звёздочкой * отмечены обязательные поля: фамилия, имя, дата рождения, должность.'],['Даты пишите в формате ДД.ММ.ГГГГ, например 15.03.1990. Лучше, чтобы ячейка была с текстовым форматом.'],['Пол: м или ж. Если пусто, считаем «м».'],['Гражданство: Россия или название страны.'],['Вид договора: Трудовой бессрочный, Трудовой срочный, Договор ГПХ (работы, услуги), Самозанятый. Если пусто, считаем бессрочным.'],['Дата приёма: если пусто, ставим сегодняшнюю. Строка, которая начинается со слова ПРИМЕР, не загружается.']];
+  X.download('shablon-sotrudniki.xlsx',X.build([{name:'Сотрудники',rows:[head,sample],widths:XCOLS.map(c=>c[1]),sample:[1]},{name:'Как заполнять',rows:how,widths:[110],wrap:true}]));
+});
+const xd=v=>{if(v===''||v==null)return '';if(typeof v==='number'){if(v>20000&&v<80000){const z=new Date(Date.UTC(1899,11,30)+v*864e5);return z.getUTCFullYear()+'-'+String(z.getUTCMonth()+1).padStart(2,'0')+'-'+String(z.getUTCDate()).padStart(2,'0');}return '';}
+  const s=String(v).trim();let m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/.exec(s);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);return m?m[1]+'-'+m[2]+'-'+m[3]:'';};
+const okDate=iso=>{if(!iso)return false;const [y,m,dd]=iso.split('-').map(Number),z=new Date(y,m-1,dd);return z.getFullYear()===y&&z.getMonth()===m-1&&z.getDate()===dd&&iso>'1930-01-01'&&iso<=d.today();};
+$('#bFile').addEventListener('change',async ev=>{
+  const f=ev.target.files[0];ev.target.value='';if(!f)return;const n=$('#bNote');n.hidden=false;n.textContent='Читаем файл…';
+  try{
+    const rows=await X.read(await f.arrayBuffer(),'Сотрудники');let ok=0,bad=[],skip=0;
+    const CT=Object.entries(R.CONTRACT);
+    rows.slice(1).forEach((r,i)=>{const c=Array.from({length:XCOLS.length},(_,k)=>r[k]==null?'':r[k]);if(c.every(x=>x===''))return;
+      const T=k=>String(c[k]).trim();
+      if(/^пример/i.test(T(0))){skip++;return;}
+      const sur=T(0),nm=T(1),mid=T(2),birth=xd(c[3]),pos=T(4);
+      const why=[];if(!sur)why.push('фамилия');if(!nm)why.push('имя');if(!okDate(birth))why.push('дата рождения ДД.ММ.ГГГГ');if(!pos)why.push('должность');
+      if(why.length){bad.push((i+2)+' ('+why.join(', ')+')');return;}
+      const cit=T(8),ru=!cit||/^(рф|россия|ru)/i.test(cit),st=xd(c[6]),ct=T(14).toLowerCase();
+      const con=(CT.find(([k,v])=>v.toLowerCase()===ct||k===ct)||['open'])[0];
+      const un=H.units().find(u=>u.name.toLowerCase()===T(13).toLowerCase());
+      R.hire({fio:[sur,nm,mid].filter(Boolean).join(' '),surname:sur,name:nm,middle:mid,birth,position:pos,salary:+String(c[5]).replace(/[\s₽]/g,'').replace(',','.')||0,start:okDate(st)?st:d.today(),sex:/^ж/i.test(T(7))?'f':'m',regime:ru?'ru':'foreign',country:ru?'Россия':cit,phone:T(9),email:T(10),innP:T(11).replace(/\D/g,''),snils:T(12),unit:un?un.id:'',contract:con,existing:true});ok++;});
+    n.textContent=(ok?'Добавлено сотрудников: '+ok+'. ':'Никого не добавили. ')+(bad.length?'Не разобрали строки: '+bad.join('; ')+'. ':'')+'';
+    render();if(ok&&!bad.length)setTimeout(()=>close($('#dBulk')),1800);
+  }catch(x){n.textContent='Не получилось прочитать файл. Нужна таблица .xlsx из шаблона: скачайте шаблон выше и заполните его.';}
 });
 
 /* ---------- увольнение ---------- */
 function firePrev(){
   const e=R.get($('#fWho').value);if(!e)return;const f=R.FIRE[$('#fWhy').value],dt=$('#fDate').value||d.today();
   $('#fNote').textContent=f.a+'. '+f.note;
-  const rows=[['Люди и зарплата','уйдёт из штата и расчёта с '+d.fmt(dt)],['Архив','личное дело хранится до '+d.fmt(R.purgeOn({out:{date:dt}}))],['Трудовая книжка','запись об увольнении в ЕФС-1 до '+d.fmt(d.nextWork(dt))+', выдать СТД-Р в последний день']];
-  if(!R.foreign(e)&&['in','check'].includes(R.mil(e).st))rows.push(['Воинский учёт','сообщить в военкомат до '+d.fmt(d.addWork(dt,5))+' и снять с учёта организации']);
-  if(R.foreign(e))rows.push(['Иностранцы','уведомление в МВД о прекращении договора до '+d.fmt(d.addWork(dt,3))]);
+  const rows=[['Сотрудники и зарплата','уйдёт из штата и расчёта с '+d.fmt(dt)],['Архив','личное дело хранится до '+d.fmt(R.purgeOn({out:{date:dt}}))],['Трудовая книжка','запись об увольнении в ЕФС-1 до '+d.fmt(d.nextWork(dt))+', выдать СТД-Р в последний день']];
+  if(e.regime==='ru'&&['in','check'].includes(R.mil(e).st))rows.push(['Воинский учёт','сообщить в военкомат до '+d.fmt(d.addWork(dt,5))+' и снять с учёта организации']);
   {const v=R.vacation(e);rows.push(['Расчёт','выплатить всё в последний день (ст. 140 ТК). Неиспользованный отпуск: '+v.left+' дн., компенсация около '+Math.round(v.comp).toLocaleString('ru-RU')+' ₽ (ст. 127 ТК), оценка']);}
   $('#fPrev').innerHTML='<b>Что произойдёт после увольнения</b>'+rows.map(r=>`<div><span>${esc(r[0])}</span><i>${esc(r[1])}</i></div>`).join('');
 }
@@ -488,13 +561,13 @@ function paintCard(){
   }else if(tab==='mil'){
     const m=R.mil(e);
     h=`<div class="st ${m.st}"><b>${{in:'Подлежит воинскому учёту',check:'Нужно уточнить',out:'Снять с учёта',no:'На учёт не ставится'}[m.st]}</b><span>${esc(m.why)}</span></div>`;
-    if(R.foreign(e)===null&&(m.st!=='no'||e.sex==='f')){
+    if(e.regime==='ru'&&(m.st!=='no'||e.sex==='f')){
       h+=`<div class="fld2"><label class="fld">Категория запаса<select id="cMilCat"><option value="">Не знаю</option>${opt(R.MILCAT,e.milCat)}</select></label><label class="fld">Годность<select id="cFit">${opt(R.FIT,e.fit)}</select></label></div>
       <div class="fld2">${field('cMilDoc','Военный билет',e.milDoc,'text','серия и номер')}${field('cRank','Звание',e.rank)}</div><div class="fld2">${field('cVus','ВУС',e.vus)}${field('cKom','Военкомат',e.komm)}</div>
       ${e.sex==='f'?`<label class="chk"><input type="checkbox" id="cHasVus"${e.hasVus?' checked':''}> Есть ВУС</label>`:''}
       <label class="chk"><input type="checkbox" id="cAbroad"${e.livesAbroad?' checked':''}> Постоянно живёт за границей</label>
       <p class="muted">Предельный возраст по составу: рядовые и сержанты ${R.soldierLimit(new Date().getFullYear())} лет в этом году (повышается до 55 к 2028 году), младшие офицеры 60, старшие 65, высшие 70. Для женщин 45 и 50. Проверить по действующей редакции закона.</p>`;
-    }else if(R.foreign(e))h+='<p class="muted">Иностранные граждане на воинском учёте организации не состоят.</p>';
+    }else if(e.regime!=='ru')h+='<p class="muted">Иностранные граждане на воинском учёте организации не состоят.</p>';
   }else if(tab==='for'){
     const f=R.foreign(e);
     h=`<div class="st ${f.lvl==='ok'?'in':f.lvl==='warn'?'check':'out'}"><b>${esc(R.REGIME[e.regime])}</b><span>${esc(f.msg)}</span></div>
@@ -540,7 +613,7 @@ function paintCard(){
   B.innerHTML=h;
   const f=$('#cFoot');
   f.innerHTML=e.out?`<button type="button" class="b" data-restore="${e.id}">Вернуть из архива</button><button type="button" class="b d" data-close>Закрыть</button>`
-   :`<button type="button" class="b" data-fire="${e.id}">Уволить</button><button type="button" class="b" data-contract="${e.id}">Создать договор</button><button type="button" class="b" data-del="${e.id}">Удалить запись</button><button type="button" class="b d" id="cSave">Сохранить</button>`;
+   :`<button type="button" class="b" data-fire="${e.id}">Уволить</button><button type="button" class="b" data-cf="${e.id}">Данные для договора</button><button type="button" class="b" data-contract="${e.id}">Создать договор</button><button type="button" class="b" data-del="${e.id}">Удалить запись</button><button type="button" class="b d" id="cSave">Сохранить</button>`;
 }
 function saveCard(){
   const e=R.get(cur);if(!e)return;const g=s=>{const x=$(s);return x?x.value:undefined;},c=s=>{const x=$(s);return x?x.checked:undefined;};
@@ -568,6 +641,7 @@ document.addEventListener('click',ev=>{
   if(t.dataset.doc){const e=R.get(cur);$('#dDocT').textContent=(R.docsFor(e).find(x=>x[0]===t.dataset.doc)||[])[1]||'Документ';$('#docBody').innerHTML=R.docHtml(e,t.dataset.doc);open('#dDoc');return;}
   if(t.id==='docPrint'){const w=window.open('','_blank');if(w){w.document.write('<meta charset="utf-8"><title>Документ</title><style>body{font:14px/1.5 Onest,Arial,sans-serif;max-width:720px;margin:32px auto;padding:0 20px}td{border:1px solid #999;padding:6px 10px}table{border-collapse:collapse;width:100%}.d{color:#666;font-size:12px}</style>'+$('#docBody').innerHTML);w.document.close();w.focus();w.print();}return;}
   if(t.id==='cSave'){saveCard();return;}
+  if(t.dataset.cf){openCF(t.dataset.cf,false);return;}
   if(t.dataset.contract){openContract(t.dataset.contract);return;}
   if(t.dataset.fire){close($('#dCard'));openFire(t.dataset.fire);return;}
   if(t.dataset.restore){R.restore(t.dataset.restore);close($('#dCard'));render();toast('Сотрудник возвращён в штат. Задачи по приёму не создавались: проверьте данные.');return;}

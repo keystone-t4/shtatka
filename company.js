@@ -3,7 +3,7 @@
 const H=window.SHTATKA_HOME,UI=window.SHTATKA_UI,toast=UI.toast;
 const $=s=>document.querySelector(s);
 const S=H.state(),ses=H.session()||{};
-const FIELDS={qHead:'head',qPost:'post',qMode:'mode',qHours:'hours',qPay:'pay',qVac:'vac',qProb:'prob'};
+const FIELDS={qHead:'head',qPost:'post',qMode:'mode',qHours:'hours',qPay:'pay',qVac:'vac',qProb:'prob',qAddr:'addr',qHr:'hr',qPhone:'phone',qEmail:'email'};
 $('#cName').textContent=ses.company||'Ваша компания';
 $('#cMeta').textContent=ses.inn?('ИНН '+ses.inn):'Зарегистрируйтесь, чтобы здесь появились реквизиты.';
 const ok=H.verified();

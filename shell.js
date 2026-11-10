@@ -11,6 +11,7 @@ H.applyUi();
 try{const J=window.SHTATKA_JOBS;if(J&&!S.timeAuto){const id=J.industry().id;if(id){S.timeAuto=1;if(J.needsShifts(id,'',false)){const m=S.menu.find(x=>x.id==='time');if(m&&!m.on)m.on=true;}H.persist();}}}catch(e){}
 
 let tt;
+const soonMsg=i=>/\(в работе\)/.test(i.title)?'Раздел «'+esc(i.title.replace(/ \(в работе\)/,''))+'» в работе: подключим на следующих шагах':'Раздел «'+esc(i.title)+'» подключим на следующих шагах';
 function toast(t){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),3200);}
 
 /* пользователь */
@@ -22,7 +23,7 @@ function items(){return S.menu.filter(m=>m.on).map(m=>H.MENU.find(i=>i.id===m.id
 function badge(i){return (!H.real()||S.demoView)&&i.demoBadge?` <span class="badge">${i.demoBadge}</span>`:'';}
 function navItem(i){
   const cur=i.id===page?' aria-current="page"':'';
-  return i.href?`<a href="${i.href}"${cur}>${esc(i.title)}${badge(i)}</a>`:`<button type="button" data-soon="Раздел «${esc(i.title)}» подключим на следующих шагах"${cur}>${esc(i.title)}${badge(i)}</button>`;
+  return i.href?`<a href="${i.href}"${cur}>${esc(i.title)}${badge(i)}</a>`:`<button type="button" data-soon="${soonMsg(i)}"${cur}>${esc(i.title)}${badge(i)}</button>`;
 }
 function renderSide(){
   const side=$('#side');if(!side)return;
@@ -37,7 +38,7 @@ function renderSide(){
   const bottom=$('#bottom');
   if(bottom){const it=items().slice(0,4);
     bottom.innerHTML=it.map(i=>{const cur=i.id===page?' aria-current="page"':'';const t=i.title.split(' ')[0];
-      return i.href?`<a href="${i.href}"${cur}>${esc(t)}</a>`:`<button type="button" data-soon="Раздел «${esc(i.title)}» подключим на следующих шагах">${esc(t)}</button>`;}).join('')+'<button type="button" id="moreBtn">Ещё</button>';}
+      return i.href?`<a href="${i.href}"${cur}>${esc(t)}</a>`:`<button type="button" data-soon="${soonMsg(i)}">${esc(t)}</button>`;}).join('')+'<button type="button" id="moreBtn">Ещё</button>';}
 }
 function openSide(){$('#side').classList.add('open');$('#scrim').classList.add('on');}
 function closeSide(){$('#side').classList.remove('open');$('#scrim').classList.remove('on');}

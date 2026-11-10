@@ -6,7 +6,7 @@ const S=H.state();
 const fmt=n=>n.toLocaleString('ru-RU')+' ₽';
 const n0=H.employees().length;
 $('#tN').value=Math.max(1,n0);
-$('#tHint').textContent=n0?('В разделе «Люди» '+n0+' чел. Можно посчитать на другое число.'):'Сейчас в разделе «Люди» никого нет, поэтому считаем на 1 человека.';
+$('#tHint').textContent=n0?('В разделе «Сотрудники» '+n0+' чел. Можно посчитать на другое число.'):'Сейчас в разделе «Сотрудники» никого нет, поэтому считаем на 1 человека.';
 function calc(){
   const n=Math.max(1,parseInt($('#tN').value,10)||1);
   $('#tM').textContent=fmt(100*n);$('#tY').textContent=fmt(1000*n);

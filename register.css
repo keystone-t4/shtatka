@@ -120,6 +120,13 @@ input:focus,select:focus{box-shadow:inset 0 0 0 2px var(--ink)}
 .kep-it{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}.kep-it small{display:block;color:var(--muted);font-size:12px}
 .kep-f{display:flex;gap:8px;justify-content:flex-end}
 
-.who{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:4px;margin-bottom:14px}
-.who button,.who a{flex:1;height:44px;display:flex;align-items:center;justify-content:center;border:0;border-radius:10px;background:none;font:inherit;font-weight:600;color:var(--muted);text-decoration:none;cursor:pointer}
-.who .on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.who{position:absolute;left:30px;top:-49px;display:flex;gap:6px;margin:0;padding:0}
+.who button,.who a{display:flex;align-items:center;justify-content:center;height:48px;padding:0 26px;border:0;border-radius:18px 18px 0 0;background:var(--ink);color:var(--bg);font:inherit;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.who a:hover{background:#33405A}
+.who .on{background:var(--peach);color:var(--ink);height:52px;margin-bottom:-4px;position:relative;z-index:2;cursor:default;box-shadow:inset 0 1.5px 0 var(--ink),inset 1.5px 0 0 var(--ink),inset -1.5px 0 0 var(--ink)}
+.card{position:relative;margin-top:50px}
+@media (min-width:881px){.side{margin-top:50px}}
+@media (max-width:520px){.who{left:16px;gap:4px}.who button,.who a{padding:0 16px;font-size:15px}}
+.manual{display:grid;gap:8px;margin-top:14px}
+.manual input{width:100%;height:52px;border-radius:14px;border:1.5px solid var(--edge);background:var(--bg);padding:0 16px;font:inherit;color:var(--ink)}
+.field .opt{font-weight:400;color:var(--muted);font-size:13px}

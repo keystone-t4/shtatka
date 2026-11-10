@@ -36,7 +36,6 @@ function build(e){
     vac:{acc:v.acc,used:v.used,left:v.left,canTake:v.canTake},sch:null,foreign:null,docs:[]};
   if(C&&C.inSchedule(e)){const T=C.types(),days={};for(let i=0;i<28;i++){const ds=d.addDays(t0,i),x=C.cell(e,ds);if(x)days[ds]=R.onSick(e,ds)?'sick':x;}
     p.sch={types:T.map(t=>({id:t.id,name:t.name,from:t.from,to:t.to})),days};}
-  if(e.regime&&e.regime!=='ru'&&e.permitUntil)p.foreign={kind:({patent:'Патент',permit:'Разрешение на работу',rvp:'Разрешение на временное проживание',hqs:'Разрешение на работу'})[e.regime]||'Документ на работу',until:e.permitUntil,no:e.permitNo||''};
   R.docsFor(e).filter(x=>SEC.includes(x[0])).forEach(x=>p.docs.push({key:x[0],title:x[1],html:R.docHtml(e,x[0])}));
   return p;
 }

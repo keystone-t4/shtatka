@@ -34,23 +34,23 @@ function example(id){
 /* Пункты меню слева. fixed — нельзя скрыть. href — раздел уже есть, иначе кнопка «скоро». */
 const MENU=[
  {id:'home',title:'Главная',href:'cabinet.html',fixed:true},
- {id:'people',title:'Люди',href:'people.html'},
+ {id:'people',title:'Сотрудники',href:'people.html'},
  {id:'tasks',title:'Заявки и задания',demoBadge:7},
- {id:'time',title:'График смен',href:'time.html'},
  {id:'docs',title:'Документы и сроки',href:'docs.html'},
+ {id:'calendar',title:'Производственный календарь',href:'calendar.html'},
  {id:'military',title:'Воинский учёт',href:'military.html'},
- {id:'foreign',title:'Иностранцы',href:'foreign.html'},
+ {id:'foreign',title:'Иностранцы (в работе)'},
  {id:'sick',title:'Больничные',href:'sick.html'},
  {id:'payroll',title:'Зарплата',href:'payroll.html'},
  {id:'laws',title:'Законы и МРОТ',href:'laws.html'},
  {id:'archive',title:'Архив',href:'archive.html'},
- {id:'company',title:'Компания',href:'company.html'},
+ {id:'company',title:'О компании',href:'company.html'},
  {id:'tariff',title:'Тариф и оплата',href:'tariff.html'},
  {id:'knowledge',title:'Знания и объявления',demoBadge:1},
  {id:'benefits',title:'Льготы'},
  {id:'costs',title:'Расходы на людей'}
 ];
-const MENU_ON=['home','people','docs','military','foreign','payroll','laws','archive','company','tariff'];
+const MENU_ON=['home','people','docs','calendar','payroll','laws','archive','company','tariff'];
 function normMenu(m){
   const seen=new Set(),out=[];
   (Array.isArray(m)?m:[]).forEach(x=>{if(x&&MENU.some(i=>i.id===x.id)&&!seen.has(x.id)){seen.add(x.id);out.push({id:x.id,on:!!x.on});}});
@@ -104,7 +104,7 @@ window.SHTATKA_HOME={
   addEmployee(e){const o={...e,id:uid(),at:Date.now()};S.employees.push(o);persist();return o;},
   removeEmployee(id){S.employees=S.employees.filter(e=>e.id!==id);persist();},
   steps(){const x=sess()||{};return [
-    {id:'verify',title:'Подтвердите компанию',sub:'Подписью руководителя или оплатой счёта',href:'register.html#verify',done:x.verified!==false},
+    {id:'verify',title:'Подтвердите компанию',sub:'Подписью, через банк или договором на бумаге',href:'register.html#verify',done:x.verified!==false},
     {id:'people',title:'Добавьте сотрудников',sub:'Нового или уже работающих по их договорам',href:'people.html',done:(window.SHTATKA_HOME.employees?window.SHTATKA_HOME.employees():S.employees).length>0},
     {id:'company',title:'Заполните анкету компании',sub:'Режим работы, дни зарплаты, отпуск',href:'company.html',done:!!S.company.filled},
     {id:'home',title:'Настройте главную',sub:'Готовый вариант для вашей отрасли',href:'customize.html',done:S.start!=='tpl:base'},
